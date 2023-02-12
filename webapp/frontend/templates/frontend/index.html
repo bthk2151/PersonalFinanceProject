@@ -1,0 +1,26 @@
+{% comment %} Django app will render this page which react will fill and take
+control of it {% endcomment %}
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Personal Finance Project</title>
+    {% load static %} {% comment %} to look at bundled js (holding react) code
+    {% endcomment %}
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+    />
+    <link rel="stylesheet" type="text/css" href="{% static "css/index.css" %}"
+    />
+  </head>
+  <body>
+    <div id="main">
+      <div id="app"></div>
+    </div>
+    <script src="{% static "frontend/main.js" %}" type="text/javascript"></script> 
+    {% comment %} use whatever static items loaded above  {% endcomment %}
+  </body>
+</html>
