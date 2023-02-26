@@ -1,7 +1,6 @@
 // to bundle all js (excluding node_modules) into a single file
 
 const path = require("path");
-const { json } = require("react-router-dom");
 const webpack = require("webpack");
 
 module.exports = {

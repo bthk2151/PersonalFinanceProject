@@ -5,4 +5,4 @@ from .models import User
 
 class UserView(generics.ListCreateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    dserializer_class = UserSerializer
