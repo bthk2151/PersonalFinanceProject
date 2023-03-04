@@ -10,7 +10,7 @@ const SidebarMobile = ({ setMode, sidebarOpen, setSidebarOpen }) => {
       sx={{
         width: sidebarWidth,
         flexShrink: 0,
-        display: { xs: "block", sm: "none" },
+        display: { xs: "block", md: "none" },
       }}
     >
       <Drawer

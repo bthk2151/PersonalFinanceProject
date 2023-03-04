@@ -11,7 +11,7 @@ const Topbar = ({ setMode }) => {
       <AppBar position="sticky" color="default">
         <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
           <IconButton
-            sx={{ display: { xs: "block", sm: "none" } }}
+            sx={{ display: { xs: "block", md: "none" } }}
             onClick={() => setSidebarOpen(true)}
           >
             <Menu sx={{ color: "default" }} />

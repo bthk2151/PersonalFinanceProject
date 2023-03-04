@@ -17,7 +17,7 @@ const Sidebar = ({ setMode }) => {
         flexShrink: 0,
         width: sidebarWidth,
         minWidth: sidebarMinWidth,
-        display: { xs: "none", sm: "block" },
+        display: { xs: "none", md: "block" },
       }}
       variant="permanent"
       anchor="left"

@@ -44,12 +44,12 @@ const SidebarItems = ({ setMode, isComprehensive }) => {
           <Box sx={{ display: "flex", justifyContent: "space-between" }}>
             <Box p={2}>
               <Typography>Good Evening,</Typography>
-              <Typography variant="h6">Maximilian</Typography>
+              <Typography variant="h6">Bryan</Typography>
             </Box>
             <Box p={2}>
               <Avatar
                 sx={{ height: 50, width: 50 }}
-                src="https://yt3.ggpht.com/yti/AHXOFjX-3RIxw6R1PwBlaDHdB0IP49-c6MmVMvfvQF9cxg=s108-c-k-c0x00ffffff-no-rj"
+                src="https://avatars.githubusercontent.com/u/89057437?v=4"
               />
             </Box>
           </Box>
