@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class User(models.Model):
@@ -8,24 +9,24 @@ class User(models.Model):
 
 class Income(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    short_day = models.CharField(max_length=3)
+    day_of_week = models.SmallIntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(6)])
     date_time = models.DateTimeField()
     name = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     is_main = models.BooleanField()
     created_date_time = models.DateTimeField(auto_now_add=True)
-    is_delete = models.BooleanField()
 
 
 class Expense(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    short_day = models.CharField(max_length=3)
+    day_of_week = models.SmallIntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(6)])
     date_time = models.DateTimeField()
     name = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     is_necessary = models.BooleanField()
     created_date_time = models.DateTimeField(auto_now_add=True)
-    is_delete = models.BooleanField()
 
 
 class Debtor(models.Model):
@@ -34,7 +35,7 @@ class Debtor(models.Model):
     phone_no = models.CharField(max_length=50)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     created_date_time = models.DateTimeField(auto_now_add=True)
-    is_settled = models.BooleanField()
+    is_settled = models.BooleanField(default=False)
 
 
 class Creditor(models.Model):
@@ -43,4 +44,4 @@ class Creditor(models.Model):
     phone_no = models.CharField(max_length=50)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     created_date_time = models.DateTimeField(auto_now_add=True)
-    is_settled = models.BooleanField()
+    is_settled = models.BooleanField(default=False)
