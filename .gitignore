@@ -1,3 +1,4 @@
 webapp/frontend/node_modules/
 webapp/personal_finance_project/.env
 webapp/*/__pycache__/
+*.pyc
