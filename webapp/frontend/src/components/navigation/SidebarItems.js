@@ -35,6 +35,14 @@ const pages = [
 ];
 
 const SidebarItems = ({ setMode, isComprehensive }) => {
+  const now = new Date();
+  const greeting =
+    now.getHours() >= 4 && now.getHours() < 12
+      ? "Good Morning"
+      : now.getHours() >= 12 && now.getHours() < 18
+      ? "Good Afternoon"
+      : "Good Evening";
+
   return (
     <>
       <Toolbar />
@@ -43,7 +51,7 @@ const SidebarItems = ({ setMode, isComprehensive }) => {
         <>
           <Box sx={{ display: "flex", justifyContent: "space-between" }}>
             <Box p={2}>
-              <Typography>Good Evening,</Typography>
+              <Typography>{greeting},</Typography>
               <Typography variant="h6">Bryan</Typography>
             </Box>
             <Box p={2}>
