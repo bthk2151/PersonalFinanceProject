@@ -3,15 +3,16 @@ import { Route, Routes } from "react-router-dom";
 import AssetsLiabilitiesPage from "./AssetsLiabilitiesPage";
 import FinancialGoalPage from "./FinancialGoalPage";
 import IncomeExpensesPage from "./IncomeExpensesPage";
-import { Box } from "@mui/material";
+import { Paper } from "@mui/material";
 
 const MainPage = () => {
   return (
-    <Box
+    <Paper
       component="main"
+      square
       sx={{
         flexGrow: 1,
-        p: 2,
+        p: 3,
       }}
     >
       <Routes>
@@ -21,7 +22,7 @@ const MainPage = () => {
         <Route path="/income-expenses" element={<IncomeExpensesPage />} />
         <Route path="*" element={<p>Hmm, nothing here</p>} />
       </Routes>
-    </Box>
+    </Paper>
   );
 };
 

@@ -3,6 +3,7 @@ import { Box, Drawer } from "@mui/material";
 import SidebarItems from "./SidebarItems";
 
 const Sidebar = ({
+  mode,
   setMode,
   sidebarWidth,
   sidebarMinWidth,
@@ -38,7 +39,7 @@ const Sidebar = ({
           },
         }}
       >
-        <SidebarItems setMode={setMode} isComprehensive={false} />
+        <SidebarItems mode={mode} setMode={setMode} isComprehensive={false} />
       </Drawer>
       {/* desktop sidebar */}
       <Drawer
@@ -52,7 +53,7 @@ const Sidebar = ({
           },
         }}
       >
-        <SidebarItems setMode={setMode} isComprehensive={true} />
+        <SidebarItems mode={mode} setMode={setMode} isComprehensive={true} />
       </Drawer>
     </Box>
   );

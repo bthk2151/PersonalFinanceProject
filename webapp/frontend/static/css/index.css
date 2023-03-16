@@ -1,3 +1,6 @@
-html, body {
-    margin: 0;
+/* for mui TextField component with numbers type, to not show arrow dial on TextField */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
 }

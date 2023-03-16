@@ -1,4 +1,4 @@
-import { createTheme, ThemeProvider, Box } from "@mui/material";
+import { createTheme, ThemeProvider, Box, CssBaseline } from "@mui/material";
 import React, { useState } from "react";
 import Topbar from "./components/navigation/Topbar";
 import Sidebar from "./components/navigation/Sidebar";
@@ -19,9 +19,11 @@ const App = () => {
 
   return (
     <ThemeProvider theme={theme}>
+      <CssBaseline />
       <Topbar setMobileSidebarOpen={setMobileSidebarOpen} />
       <Box sx={{ display: "flex" }}>
         <Sidebar
+          mode={mode}
           setMode={setMode}
           sidebarWidth={sidebarWidth}
           sidebarMinWidth={sidebarMinWidth}

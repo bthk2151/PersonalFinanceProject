@@ -34,7 +34,7 @@ const pages = [
   },
 ];
 
-const SidebarItems = ({ setMode, isComprehensive }) => {
+const SidebarItems = ({ mode, setMode, isComprehensive }) => {
   const now = new Date();
   const greeting =
     now.getHours() >= 4 && now.getHours() < 12
@@ -82,8 +82,8 @@ const SidebarItems = ({ setMode, isComprehensive }) => {
           </ListItemIcon>
           <ListItemText>
             <Switch
-              defaultChecked
               onChange={(e) => setMode(e.target.checked ? "dark" : "light")}
+              checked={mode === "dark"}
             />
           </ListItemText>
         </ListItemButton>
