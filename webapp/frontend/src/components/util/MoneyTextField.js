@@ -2,8 +2,7 @@ import { InputAdornment, TextField } from "@mui/material";
 import React, { useState } from "react";
 
 // for Malaysian Ringgit currency input
-const MoneyTextField = (props) => {
-  const [value, setValue] = useState("");
+const MoneyTextField = ({ value, setValue, ...props }) => {
   const handleValueChange = (e) => {
     const regex = /^\d*\.?\d{0,2}$/; // allow only numbers and up to 2 decimal places
     if (regex.test(e.target.value)) {

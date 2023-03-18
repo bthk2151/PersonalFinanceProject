@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from .views import index
 
 urlpatterns = [
@@ -6,5 +6,5 @@ urlpatterns = [
     path('financial-goal', index),
     path('assets-liabilities', index),
     path('income-expenses', index),
-    path('<path:path>', index)
+    re_path(r'^(?!api/).+', index)  # for all paths excluding the api directory
 ]
