@@ -40,15 +40,15 @@ class IncomeView(APIView):
 
         serializer = self.serializer_class(data=request.data)
         if (serializer.is_valid()):  # validate request data with serializer class
-            date_time = serializer.data.get('date_time')
+            date = serializer.data.get('date')
             name = serializer.data.get('name')
             amount = serializer.data.get('amount')
             is_main = serializer.data.get('is_main')
 
             user = User.objects.get(id=request.session.get('user_id'))
-            day_of_week = datetime.fromisoformat(date_time).weekday()
+            day_of_week = datetime.fromisoformat(date).weekday()
 
-            income = Income(date_time=date_time, name=name, amount=amount,
+            income = Income(date=date, name=name, amount=amount,
                             is_main=is_main, user=user, day_of_week=day_of_week)
             income.save()
 
@@ -88,15 +88,15 @@ class ExpenseView(APIView):
 
         serializer = self.serializer_class(data=request.data)
         if (serializer.is_valid()):  # validate request data with serializer class
-            date_time = serializer.data.get('date_time')
+            date = serializer.data.get('date')
             name = serializer.data.get('name')
             amount = serializer.data.get('amount')
             is_necessary = serializer.data.get('is_necessary')
 
             user = User.objects.get(id=request.session.get('user_id'))
-            day_of_week = datetime.fromisoformat(date_time).weekday()
+            day_of_week = datetime.fromisoformat(date).weekday()
 
-            expense = Expense(date_time=date_time, name=name, amount=amount,
+            expense = Expense(date=date, name=name, amount=amount,
                               is_necessary=is_necessary, user=user, day_of_week=day_of_week)
             expense.save()
 

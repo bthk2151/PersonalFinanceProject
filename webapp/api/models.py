@@ -11,7 +11,7 @@ class Income(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     day_of_week = models.SmallIntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(6)])
-    date_time = models.DateTimeField()
+    date = models.DateField()
     name = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     is_main = models.BooleanField()
@@ -22,7 +22,7 @@ class Expense(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     day_of_week = models.SmallIntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(6)])
-    date_time = models.DateTimeField()
+    date = models.DateField()
     name = models.CharField(max_length=255)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     is_necessary = models.BooleanField()

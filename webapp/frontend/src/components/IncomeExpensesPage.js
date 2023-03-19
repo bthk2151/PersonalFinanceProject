@@ -98,7 +98,10 @@ const IncomeExpensesPage = () => {
     const errors = {
       name: !Boolean(entryName.trim()) ? "Name is required" : null,
       amount: !Boolean(Number(entryAmount)) ? "Amount is required" : null, // this means amount 0.00 is invalid as well
-      date: !entryDate.isValid() ? "Date is required" : null,
+      date:
+        entryCategory != "debtor/creditor" && !entryDate.isValid()
+          ? "Date is required"
+          : null,
     };
 
     setEntrySubmitErrors(errors); // note: state will only change when re-rendered, NOT immediately!
@@ -125,7 +128,7 @@ const IncomeExpensesPage = () => {
     );
     console.log(entryName);
     console.log(entryAmount);
-    console.log(entryDate.format());
+    if (entryCategory != "debtor/creditor") console.log(entryDate.format());
   };
 
   useEffect(() => {
@@ -194,20 +197,22 @@ const IncomeExpensesPage = () => {
           {renderEntrySubtypeToggleButton()}
         </Grid>
         <Grid item xs={5} md={9} paddingRight={{ xs: 0, md: 1 }}>
-          <GridBox justifyContent="flex-end">
-            <DatePickerField
-              disableFuture
-              label="Date"
-              value={entryDate}
-              onChange={(newEntryDate) => setEntryDate(newEntryDate)}
-              slotProps={{
-                textField: {
-                  helperText: entrySubmitErrors.date,
-                  error: Boolean(entrySubmitErrors.date),
-                },
-              }}
-            />
-          </GridBox>
+          {entryCategory != "debtor/creditor" && (
+            <GridBox justifyContent="flex-end">
+              <DatePickerField
+                disableFuture
+                label="Date"
+                value={entryDate}
+                onChange={(newEntryDate) => setEntryDate(newEntryDate)}
+                slotProps={{
+                  textField: {
+                    helperText: entrySubmitErrors.date,
+                    error: Boolean(entrySubmitErrors.date),
+                  },
+                }}
+              />
+            </GridBox>
+          )}
         </Grid>
         <Grid item xs={12} md={3}>
           <GridBox justifyContent={{ xs: "flex-end", md: "flex-start" }}>

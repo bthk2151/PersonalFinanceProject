@@ -11,10 +11,10 @@ class UserSerializer(serializers.ModelSerializer):
 class IncomeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Income
-        fields = ('date_time', 'name', 'amount', 'is_main')
+        fields = ('date', 'name', 'amount', 'is_main')
 
 
 class ExpenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
-        fields = ('date_time', 'name', 'amount', 'is_necessary')
+        fields = ('date', 'name', 'amount', 'is_necessary')
