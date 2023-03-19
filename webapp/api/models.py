@@ -32,7 +32,8 @@ class Expense(models.Model):
 class Debtor(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    phone_no = models.CharField(max_length=50)
+    # phone_no always null, only for mobile integration later
+    phone_no = models.CharField(max_length=50, null=True)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     created_date_time = models.DateTimeField(auto_now_add=True)
     is_settled = models.BooleanField(default=False)
@@ -41,7 +42,8 @@ class Debtor(models.Model):
 class Creditor(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    phone_no = models.CharField(max_length=50)
+    # phone_no always null, only for mobile integration later
+    phone_no = models.CharField(max_length=50, null=True)
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     created_date_time = models.DateTimeField(auto_now_add=True)
     is_settled = models.BooleanField(default=False)
