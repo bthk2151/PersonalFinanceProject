@@ -4,8 +4,8 @@ from .income_expenses_views import CreateIncomeView, CreateExpenseView, CreateDe
 
 urlpatterns = [
     path('user', UserView.as_view()),
-    path('income', CreateIncomeView.as_view()),
-    path('expense', CreateExpenseView.as_view()),
-    path('debtor', CreateDebtorView.as_view()),
-    path('creditor', CreateCreditorView.as_view())
+    path('create-income', CreateIncomeView.as_view()),
+    path('create-expense', CreateExpenseView.as_view()),
+    path('create-debtor', CreateDebtorView.as_view()),
+    path('create-creditor', CreateCreditorView.as_view())
 ]

@@ -1,8 +1,11 @@
-import { CreditCard, People, Savings } from "@mui/icons-material";
+import { Close, CreditCard, People, Savings } from "@mui/icons-material";
 import {
+  Alert,
   Autocomplete,
   Button,
+  Collapse,
   Grid,
+  IconButton,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -13,11 +16,18 @@ import React, { useEffect, useState } from "react";
 import DatePickerField from "./util/DatePickerField";
 import GridBox from "./util/GridBox";
 import MoneyTextField from "./util/MoneyTextField";
+import axios from "axios";
+import { capitalizeWords } from "./util/util.js";
 
-const now = new Date();
+// ensure entryCategory state values are fixed by storing into a obj dict
+const ENTRY_CATEGORIES = {
+  INCOME: "INCOME",
+  EXPENSE: "EXPENSE",
+  DEBTOR_CREDITOR: "DEBTOR_CREDITOR",
+};
 
 const IncomeExpensesPage = () => {
-  const [entryCategory, setEntryCategory] = useState("income");
+  const [entryCategory, setEntryCategory] = useState(ENTRY_CATEGORIES.INCOME);
 
   const [entryName, setEntryName] = useState("");
 
@@ -27,7 +37,7 @@ const IncomeExpensesPage = () => {
   const [isNecessary, setIsNecessary] = useState(true);
   const [isDebtor, setIsDebtor] = useState(true); // if isDebtor == false, then it's a creditor
   const renderEntrySubtypeToggleButton = () => {
-    if (entryCategory === "income")
+    if (entryCategory === ENTRY_CATEGORIES.INCOME)
       return (
         <ToggleButtonGroup
           value={isMain}
@@ -44,7 +54,7 @@ const IncomeExpensesPage = () => {
           </ToggleButton>
         </ToggleButtonGroup>
       );
-    else if (entryCategory === "expense")
+    else if (entryCategory === ENTRY_CATEGORIES.EXPENSE)
       return (
         <ToggleButtonGroup
           value={isNecessary}
@@ -63,7 +73,7 @@ const IncomeExpensesPage = () => {
           </ToggleButton>
         </ToggleButtonGroup>
       );
-    else if (entryCategory === "debtor/creditor")
+    else if (entryCategory === ENTRY_CATEGORIES.DEBTOR_CREDITOR)
       return (
         <ToggleButtonGroup
           value={isDebtor}
@@ -82,7 +92,7 @@ const IncomeExpensesPage = () => {
       );
   };
 
-  const [entryDate, setEntryDate] = useState(dayjs(now));
+  const [entryDate, setEntryDate] = useState(dayjs(new Date()));
 
   // to store field respective error messages, if error exists
   const [entrySubmitErrors, setEntrySubmitErrors] = useState({
@@ -91,44 +101,82 @@ const IncomeExpensesPage = () => {
     date: null,
   });
 
+  // used when an entry creation is successful / unsuccessful, to display alert
+  const [entryCreationStatus, setEntryCreationStatus] = useState(null);
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     // validate and show error messages, if any field is invalid
     const errors = {
-      name: !Boolean(entryName.trim()) ? "Name is required" : null,
-      amount: !Boolean(Number(entryAmount)) ? "Amount is required" : null, // this means amount 0.00 is invalid as well
+      name: !Boolean(entryName.trim())
+        ? "Name is required"
+        : entryName.trim().length > 200
+        ? "Stop writing essay, bro"
+        : null,
+      amount: !Boolean(Number(entryAmount))
+        ? "Amount is required"
+        : Number(entryAmount) > 1000000
+        ? "Don't kid yourself, bro"
+        : null, // this means amount 0.00 is invalid as well
       date:
-        entryCategory != "debtor/creditor" && !entryDate.isValid()
+        entryCategory != ENTRY_CATEGORIES.DEBTOR_CREDITOR &&
+        !entryDate.isValid()
           ? "Date is required"
           : null,
     };
 
     setEntrySubmitErrors(errors); // note: state will only change when re-rendered, NOT immediately!
 
-    // proceed only if all fields are valid
+    // proceed only if all fields are valid (all error message are null)
     if (!Object.values(errors).every((value) => value === null)) return;
 
-    console.log(
-      "Category: " +
-        entryCategory +
-        " (" +
-        (entryCategory === "income"
-          ? isMain
-            ? "main"
-            : "side"
-          : entryCategory === "expense"
-          ? isNecessary
-            ? "necessary"
-            : "luxury"
-          : isDebtor
-          ? "debtor"
-          : "creditor") +
-        ")"
-    );
-    console.log(entryName);
-    console.log(entryAmount);
-    if (entryCategory != "debtor/creditor") console.log(entryDate.format());
+    // all common params in create entry endpoints
+    const params = {
+      date: entryDate.format("YYYY-MM-DD"),
+      name: entryName.trim(),
+      amount: Number(entryAmount),
+    };
+
+    // based on category of entry, define and map to endpoint and any other additional params required
+    const endpointMap = {
+      [ENTRY_CATEGORIES.INCOME]: {
+        name: "Income",
+        endpoint: "/api/create-income",
+        additionalParams: { is_main: isMain },
+      },
+      [ENTRY_CATEGORIES.EXPENSE]: {
+        name: "Expense",
+        endpoint: "/api/create-expense",
+        additionalParams: { is_necessary: isNecessary },
+      },
+      [ENTRY_CATEGORIES.DEBTOR_CREDITOR]: {
+        name: isDebtor ? "Debtor" : "Creditor",
+        endpoint: isDebtor ? "/api/create-debtor" : "/api/create-creditor",
+        additionalParams: {},
+      },
+    };
+
+    const { name, endpoint, additionalParams } = endpointMap[entryCategory];
+
+    axios
+      .post(endpoint, { ...params, ...additionalParams })
+      .then((response) =>
+        setEntryCreationStatus({
+          isSuccess: true,
+          isIncomeOrDebtor:
+            entryCategory === ENTRY_CATEGORIES.INCOME ||
+            (entryCategory === ENTRY_CATEGORIES.DEBTOR_CREDITOR && isDebtor),
+          message: `${name} entry (${entryName}) created successfully`,
+        })
+      )
+      .catch((error) =>
+        setEntryCreationStatus({
+          isSuccess: false,
+          color: "warning", // mui theme keyword for orange color
+          message: `ERROR: ${error.message}`,
+        })
+      );
   };
 
   useEffect(() => {
@@ -152,15 +200,15 @@ const IncomeExpensesPage = () => {
                 : null
             }
           >
-            <ToggleButton value="income" color="success">
+            <ToggleButton value={ENTRY_CATEGORIES.INCOME} color="success">
               <Savings sx={{ mr: 1 }} />
               <Typography variant="button">Income</Typography>
             </ToggleButton>
-            <ToggleButton value="expense" color="error">
+            <ToggleButton value={ENTRY_CATEGORIES.EXPENSE} color="error">
               <CreditCard sx={{ mr: 1 }} />
               <Typography variant="button">Expense</Typography>
             </ToggleButton>
-            <ToggleButton value="debtor/creditor">
+            <ToggleButton value={ENTRY_CATEGORIES.DEBTOR_CREDITOR}>
               <People sx={{ mr: 1 }} />
               <Typography variant="button">Debtor / Creditor</Typography>
             </ToggleButton>
@@ -170,8 +218,10 @@ const IncomeExpensesPage = () => {
           <Autocomplete
             freeSolo
             value={entryName}
-            onInputChange={(_, newEntryName) => setEntryName(newEntryName)}
-            options={["test"]}
+            onInputChange={(_, newEntryName) =>
+              setEntryName(capitalizeWords(newEntryName))
+            }
+            options={[]}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -197,7 +247,7 @@ const IncomeExpensesPage = () => {
           {renderEntrySubtypeToggleButton()}
         </Grid>
         <Grid item xs={5} md={9} paddingRight={{ xs: 0, md: 1 }}>
-          {entryCategory != "debtor/creditor" && (
+          {entryCategory != ENTRY_CATEGORIES.DEBTOR_CREDITOR && (
             <GridBox justifyContent="flex-end">
               <DatePickerField
                 disableFuture
@@ -218,8 +268,8 @@ const IncomeExpensesPage = () => {
           <GridBox justifyContent={{ xs: "flex-end", md: "flex-start" }}>
             <Button
               color={
-                entryCategory === "income" ||
-                (entryCategory === "debtor/creditor" && isDebtor)
+                entryCategory === ENTRY_CATEGORIES.INCOME ||
+                (entryCategory === ENTRY_CATEGORIES.DEBTOR_CREDITOR && isDebtor)
                   ? "success"
                   : "error" // expense or creditor
               }
@@ -230,6 +280,23 @@ const IncomeExpensesPage = () => {
               Create
             </Button>
           </GridBox>
+        </Grid>
+        <Grid item xs={12} md={10}>
+          <Collapse
+            in={entryCreationStatus != null}
+            timeout={{ enter: 250, exit: 0 }} // entrance take 0.25 seconds, exit is instant
+          >
+            <Alert
+              severity={entryCreationStatus?.isSuccess ? "success" : "warning"} // for icon
+              color={
+                entryCreationStatus?.isIncomeOrDebtor ? "success" : "error"
+              } // mui keywords for the color green / red
+              variant="outlined"
+              onClose={() => setEntryCreationStatus(null)}
+            >
+              {entryCreationStatus?.message}
+            </Alert>
+          </Collapse>
         </Grid>
       </Grid>
     </form>
