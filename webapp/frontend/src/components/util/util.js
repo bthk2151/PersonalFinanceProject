@@ -2,7 +2,7 @@ import React from "react";
 
 // all util js functions to reduce redundancy
 
-// capitalize first letter of each word in string, ideally for text fields
+// capitalize first letter of each word in string, intended for text fields
 export const capitalizeWords = (str) =>
   str
     .split(" ")
