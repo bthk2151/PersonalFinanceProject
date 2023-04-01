@@ -166,7 +166,7 @@ const IncomeExpensesPage = () => {
           isIncomeOrDebtor:
             entryCategory === ENTRY_CATEGORIES.INCOME ||
             (entryCategory === ENTRY_CATEGORIES.DEBTOR_CREDITOR && isDebtor),
-          message: `${name} entry (${entryName}) created successfully`,
+          message: `${name} entry (${entryName.trim()}) created successfully`,
         })
       )
       .catch((error) =>
@@ -178,9 +178,38 @@ const IncomeExpensesPage = () => {
       );
   };
 
+  const [suggestedEntries, setSuggestedEntries] = useState({
+    top_main_income_entries: [],
+    top_side_income_entries: [],
+    top_necessary_expense_entries: [],
+    top_luxury_expense_entries: [],
+  });
+  const [currentSuggestedEntries, setCurrentSuggestedEntries] = useState([]);
+  // on page load, fetch most common entry names from db
   useEffect(() => {
-    // update list of "suggested" values for Autocomplete TextField
-  }, [entryCategory, isMain, isNecessary, isDebtor]);
+    axios.get("/api/top-income-expense-entries").then((response) => {
+      setSuggestedEntries(response.data);
+      setCurrentSuggestedEntries(response.data.top_main_income_entries); // since page load defaults as a main income entry
+    });
+  }, []);
+
+  // if income or expense entry, show suggested entry names
+  useEffect(() => {
+    if (entryCategory === ENTRY_CATEGORIES.DEBTOR_CREDITOR)
+      setCurrentSuggestedEntries([]);
+    else if (entryCategory === ENTRY_CATEGORIES.INCOME)
+      setCurrentSuggestedEntries(
+        isMain
+          ? suggestedEntries.top_main_income_entries
+          : suggestedEntries.top_side_income_entries
+      );
+    else if (entryCategory === ENTRY_CATEGORIES.EXPENSE)
+      setCurrentSuggestedEntries(
+        isNecessary
+          ? suggestedEntries.top_necessary_expense_entries
+          : suggestedEntries.top_luxury_expense_entries
+      );
+  }, [entryCategory, isMain, isNecessary]);
 
   return (
     <form onSubmit={handleSubmit} noValidate autoComplete="off">
@@ -220,7 +249,7 @@ const IncomeExpensesPage = () => {
             onInputChange={(_, newEntryName) =>
               setEntryName(capitalizeWords(newEntryName))
             }
-            options={[]}
+            options={currentSuggestedEntries}
             renderInput={(params) => (
               <TextField
                 {...params}
