@@ -14,10 +14,44 @@ class CreateIncomeSerializer(serializers.ModelSerializer):
         fields = ('date', 'name', 'amount', 'is_main')
 
 
+class DeleteIncomeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Income
+        fields = ('id')
+
+
 class CreateExpenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
         fields = ('date', 'name', 'amount', 'is_necessary')
+
+
+class DeleteExpenseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Expense
+        fields = ('id')
+
+
+class GetTop5EntriesOfEachIncomeExpenseCategorySerializer(serializers.Serializer):
+    top_main_income_entries = serializers.ListField(
+        child=serializers.CharField(max_length=255))
+    top_side_income_entries = serializers.ListField(
+        child=serializers.CharField(max_length=255))
+    top_necessary_expense_entries = serializers.ListField(
+        child=serializers.CharField(max_length=255))
+    top_luxury_expense_entries = serializers.ListField(
+        child=serializers.CharField(max_length=255))
+
+
+class GetIncomeExpenseListSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    type = serializers.CharField(max_length=1)
+    day_of_week = serializers.IntegerField(min_value=0, max_value=6)
+    date = serializers.DateField()
+    name = serializers.CharField(max_length=255)
+    amount = serializers.DecimalField(max_digits=15, decimal_places=2)
+    is_main = serializers.BooleanField()
+    created_date_time = serializers.DateTimeField()
 
 
 class CreateDebtorSerializer(serializers.ModelSerializer):

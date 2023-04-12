@@ -1,4 +1,4 @@
-import React from "react";
+import dayjs from "dayjs";
 
 // all util js functions to reduce redundancy
 
@@ -8,3 +8,24 @@ export const capitalizeWords = (str) =>
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
+
+// convert int day_of_week to short form day name
+// note: day_of_week value for income expense entries are derived from using Python datetime.fromisoformat().weekday()
+export const intDayToShortDay = (int) =>
+  ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][int];
+
+// format amount in currency string format (include RM prefix)
+const currencyFormatter = new Intl.NumberFormat("ms-MY", {
+  style: "currency",
+  currency: "MYR",
+});
+export const formatCurrency = (amount) => currencyFormatter.format(amount);
+
+// consistent date format throughout the app, DD/MM/YYYY, as all formats should be intuitively (smallest to biggest)
+export const formatDate = (date, isShortForm = false) =>
+  dayjs(date).format(!isShortForm ? "DD/MM/YYYY" : "DD/MM");
+
+// app has generally 2 main layouts, one for small and one for regular screens
+// using window.matchMedia() instead of MUI useMediaQuery() hook, latter seems clunky to define at each component
+export const isSmallScreen = () =>
+  !window.matchMedia("(min-width: 900px)").matches;

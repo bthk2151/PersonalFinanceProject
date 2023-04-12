@@ -11,7 +11,7 @@ const MainPage = () => {
       component="main"
       square
       sx={{
-        flexGrow: 1,
+        flexGrow: 1, // makes the main page spread across the rest of the screen space available, regardless of zoom
         p: 3,
       }}
     >
