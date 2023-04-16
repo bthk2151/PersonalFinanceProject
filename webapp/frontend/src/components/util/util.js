@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import { colors } from "@mui/material";
 
 // all util js functions to reduce redundancy
 
@@ -29,3 +30,12 @@ export const formatDate = (date, isShortForm = false) =>
 // using window.matchMedia() instead of MUI useMediaQuery() hook, latter seems clunky to define at each component
 export const isSmallScreen = () =>
   !window.matchMedia("(min-width: 900px)").matches;
+
+// general app colors are MUI success for positive elements and MUI error for negative elements
+// more specific app colors can be accessed below
+export const getThemeColors = () => ({
+  positive: colors.green[500], // MUI success color hex code
+  positiveStrong: colors.green[900],
+  negative: colors.red[500], // MUI error color hex code
+  negativeStrong: colors.red[900],
+});

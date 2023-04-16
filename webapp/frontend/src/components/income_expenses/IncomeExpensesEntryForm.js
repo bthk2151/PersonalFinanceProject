@@ -113,9 +113,9 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
         : entryName.trim().length > 200
         ? "Stop writing essay, bro"
         : null,
-      amount: !Boolean(Number(entryAmount))
+      amount: !Boolean(parseFloat(entryAmount))
         ? "Amount is required"
-        : Number(entryAmount) > 1000000
+        : parseFloat(entryAmount) > 1000000
         ? "Don't kid yourself, bro"
         : null, // this means amount 0.00 is invalid as well
       date:
@@ -134,7 +134,7 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
     const params = {
       date: entryDate.format("YYYY-MM-DD"),
       name: entryName.trim(),
-      amount: Number(entryAmount),
+      amount: parseFloat(entryAmount),
     };
 
     // based on category of entry, define and map to endpoint and any other additional params required
