@@ -161,6 +161,7 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
     axios
       .post(endpoint, { ...params, ...additionalParams })
       .then((response) => {
+        // collapse in the alert component to indicate successful creation
         setEntryCreationStatus({
           isSuccess: true,
           isIncomeOrDebtor:
@@ -168,9 +169,16 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
             (entryCategory === ENTRY_CATEGORIES.DEBTOR_CREDITOR && isDebtor),
           message: `${name} entry (${entryName.trim()}) created successfully`,
         });
+
+        // reset fields
+        setEntryName("");
+        setEntryAmount("");
+
+        // refresh visuals in IncomeExpenseVisuals.js
         refreshData();
       })
       .catch((error) =>
+        // collapse in the alert component to indicate error in creation
         setEntryCreationStatus({
           isSuccess: false,
           color: "warning", // mui theme keyword for orange color

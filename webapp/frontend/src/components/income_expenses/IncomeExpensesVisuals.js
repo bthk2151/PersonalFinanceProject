@@ -25,7 +25,10 @@ import { Check, Close, Delete } from "@mui/icons-material";
 import IncomeExpensesConfirmDeleteEntryDialog from "./IncomeExpensesConfirmDeleteEntryDialog";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
 import { ResponsiveContainer, PieChart, Pie, Sector } from "recharts";
-import IncomeExpenseSummaryValueCard from "./IncomeExpenseSummaryValueCard";
+import IncomeExpensesSummaryValueCard from "./IncomeExpensesSummaryValueCard";
+import IncomeExpensesDataGrid from "./IncomeExpensesDataGrid";
+import SavingsGaugeVisual from "./SavingsGaugeVisual";
+import IncomeExpensesTypePieVisual from "./IncomeExpensesTypePieVisual";
 
 // ensure income expense entry types' state values are fixed by storing into a obj dict
 const INCOME_TYPES = {
@@ -40,73 +43,7 @@ const EXPENSE_TYPES = {
 const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
   const themeColors = getThemeColors();
 
-  const [month, setMonth] = useState(dayjs(new Date())); // always default visuals to current month
-
-  const commonColumnProps = { sortable: false }; // common column props to be applied on each datagrid column
-  const columns = useMemo(
-    () => [
-      {
-        field: "day_of_week",
-        headerName: "Day",
-        valueFormatter: (params) => intDayToShortDay(params.value),
-        flex: 0.4,
-        ...commonColumnProps,
-      },
-      {
-        field: "date",
-        headerName: "Date",
-        type: "date",
-        valueGetter: (params) => dayjs(params.value), // raw column data
-        valueFormatter: (params) => formatDate(params.value, isSmallScreen()), // formatted column data, if small screen, use short form DD/MM display
-        flex: 0.6,
-        ...commonColumnProps,
-      },
-      {
-        field: "name",
-        headerName: "Name",
-        flex: 1,
-        renderCell: (params) => (
-          <Tooltip title={params.value} enterTouchDelay={0}>
-            <Box component="span">{params.value}</Box>
-          </Tooltip>
-        ),
-        ...commonColumnProps,
-      },
-      {
-        field: "amount",
-        headerName: "Amount",
-        type: "number",
-        renderCell: (params) => (
-          <Chip
-            label={formatCurrency(params.value)}
-            color={params.row.type === "I" ? "success" : "error"}
-            size="small"
-            variant="outlined"
-          />
-        ),
-        flex: 1,
-        ...commonColumnProps,
-      },
-      {
-        field: "actions",
-        type: "actions",
-        getActions: (params) => [
-          <GridActionsCellItem
-            icon={
-              <Tooltip title="Delete">
-                <Delete />
-              </Tooltip>
-            }
-            onClick={() => handleDeleteRow(params.row)}
-            label="Delete"
-          />,
-        ],
-        flex: 0.1,
-        ...commonColumnProps,
-      },
-    ],
-    []
-  );
+  const [selectedMonthYear, setSelectedMonthYear] = useState(dayjs(new Date())); // always default visuals to current month
 
   const [data, setData] = useState([]);
 
@@ -158,14 +95,20 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
   useEffect(() => {
     // request1 - get selected month data
     const request1 = axios.get(
-      `/api/income-expense-list?month=${month.month() + 1}&year=${month.year()}`
+      `/api/income-expense-list?month=${
+        selectedMonthYear.month() + 1
+      }&year=${selectedMonthYear.year()}`
     );
 
     // request2 - for comparison visuals, get previous month total expenses
     const request2 = axios.get(
       `/api/income-expense-list?month=${
-        month.month() === 0 ? 12 : month.month()
-      }&year=${month.month() === 0 ? month.year() - 1 : month.year()}`
+        selectedMonthYear.month() === 0 ? 12 : selectedMonthYear.month()
+      }&year=${
+        selectedMonthYear.month() === 0
+          ? selectedMonthYear.year() - 1
+          : selectedMonthYear.year()
+      }`
     );
 
     // only when both selected and previous month data is retrieved, data for all visuals are ready
@@ -248,7 +191,7 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
 
         setPreviousMonthTotalExpenses(previousTotalExpenses);
 
-        // lastly, use both month data to create gauge visual data
+        // use both month data to create gauge visual data
         // gauge visual data format is always 1) [{total expenses}, {total income - total expenses AKA savings}] or just 2) [{total expenses}]
         // savings may use selected month income, if none, use previous month main income to calculate (in this case, its an estimation)
         if (totalIncome > 0) {
@@ -305,78 +248,7 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
         }
       })
       .catch((error) => console.log(error.message));
-  }, [month, refreshSignal]);
-
-  const renderActiveSector = (props) => {
-    const RADIAN = Math.PI / 180;
-    const {
-      cx,
-      cy,
-      midAngle,
-      innerRadius,
-      outerRadius,
-      startAngle,
-      endAngle,
-      fill,
-      percent,
-      name,
-      value,
-    } = props;
-    const sin = Math.sin(-RADIAN * midAngle);
-    const cos = Math.cos(-RADIAN * midAngle);
-    const sx = cx + (outerRadius + 10) * cos;
-    const sy = cy + (outerRadius + 10) * sin;
-    const mx = cx + (outerRadius + 10) * cos;
-    const my = cy + (outerRadius + 130) * sin;
-    const ex = mx + (cos >= 0 ? 1 : -1) * 22;
-    const ey = my;
-
-    const tWidth = isSmallScreen() ? 150 : 300; // for everything to be visible, require the text to breakline if its small screen
-    const tHeight = 150;
-    const tx = ex + (cos >= 0 ? 1 : -1) * 12 - (cos >= 0 ? 0 : tWidth);
-    const ty = ey - 37;
-    const tAlign = cos >= 0 ? "left" : "right";
-
-    return (
-      <g>
-        <Sector
-          cx={cx}
-          cy={cy}
-          innerRadius={innerRadius}
-          outerRadius={outerRadius}
-          startAngle={startAngle}
-          endAngle={endAngle}
-          fill={fill}
-        />
-        <Sector
-          cx={cx}
-          cy={cy}
-          startAngle={startAngle - 2}
-          endAngle={endAngle + 2}
-          innerRadius={outerRadius + 6}
-          outerRadius={outerRadius + 10}
-          fill={fill}
-        />
-        <path
-          d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
-          stroke={fill}
-          fill="none"
-        />
-        <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
-        <foreignObject x={tx} y={ty} width={tWidth} height={tHeight}>
-          <Box component="div" sx={{ textAlign: tAlign }}>
-            <Typography variant="caption">
-              <b>{name}</b>
-              <br />
-              {formatCurrency(value)}
-              <br />
-              {`(${(percent * 100).toFixed(2)}%)`}
-            </Typography>
-          </Box>
-        </foreignObject>
-      </g>
-    );
-  };
+  }, [selectedMonthYear, refreshSignal]);
 
   const [confirmDeleteEntryDialogOpen, setConfirmDeleteEntryDialogOpen] =
     useState(false);
@@ -397,10 +269,10 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
             <DatePicker
               views={["year", "month"]}
               disableFuture
-              value={month}
-              onChange={(newMonth) =>
-                dayjs(newMonth).isValid()
-                  ? setMonth(newMonth)
+              value={selectedMonthYear}
+              onChange={(newMonthYear) =>
+                dayjs(newMonthYear).isValid()
+                  ? setSelectedMonthYear(newMonthYear)
                   : dayjs(new Date())
               }
               slotProps={{
@@ -413,28 +285,10 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
         </Grid>
         <Grid item xs={12} md={4} paddingRight={{ xs: 0, md: 1 }}>
           <Card elevation={4}>
-            <ResponsiveContainer width="100%" height={300}>
-              {summaryData
-                .filter((entry) => entry.type === "I")
-                .reduce((acc, entry) => acc + entry.value, 0) === 0 ? (
-                <CenteredBox>
-                  <Typography sx={{ fontStyle: "italic" }}>
-                    No income data
-                  </Typography>
-                </CenteredBox>
-              ) : (
-                <PieChart>
-                  <Pie
-                    dataKey="value"
-                    nameKey="name"
-                    data={summaryData.filter((entry) => entry.type === "I")}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                  />
-                </PieChart>
-              )}
-            </ResponsiveContainer>
+            <IncomeExpensesTypePieVisual
+              summaryData={summaryData}
+              filterType="I"
+            />
           </Card>
         </Grid>
         <Grid item xs={12} md={2}>
@@ -444,7 +298,7 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
             justifyContent="space-between"
             height="100%"
           >
-            <IncomeExpenseSummaryValueCard
+            <IncomeExpensesSummaryValueCard
               amount={
                 summaryData.find(
                   (entry) => entry.name === INCOME_TYPES.MAIN_INCOME
@@ -457,7 +311,7 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
                 ).name
               }
             />
-            <IncomeExpenseSummaryValueCard
+            <IncomeExpensesSummaryValueCard
               amount={
                 summaryData.find(
                   (entry) => entry.name === INCOME_TYPES.SIDE_INCOME
@@ -474,28 +328,10 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
         </Grid>
         <Grid item xs={12} md={4} paddingX={{ xs: 0, md: 1 }}>
           <Card elevation={4}>
-            <ResponsiveContainer width="100%" height={300}>
-              {summaryData
-                .filter((entry) => entry.type === "E")
-                .reduce((acc, entry) => acc + entry.value, 0) === 0 ? (
-                <CenteredBox>
-                  <Typography sx={{ fontStyle: "italic" }}>
-                    No expense data
-                  </Typography>
-                </CenteredBox>
-              ) : (
-                <PieChart>
-                  <Pie
-                    dataKey="value"
-                    nameKey="name"
-                    data={summaryData.filter((entry) => entry.type === "E")}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                  />
-                </PieChart>
-              )}
-            </ResponsiveContainer>
+            <IncomeExpensesTypePieVisual
+              summaryData={summaryData}
+              filterType="E"
+            />
           </Card>
         </Grid>
         <Grid item xs={12} md={2}>
@@ -505,7 +341,7 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
             justifyContent="space-between"
             height="100%"
           >
-            <IncomeExpenseSummaryValueCard
+            <IncomeExpensesSummaryValueCard
               amount={
                 summaryData.find(
                   (entry) => entry.name === EXPENSE_TYPES.NECESSARY_EXPENSE
@@ -518,7 +354,7 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
                 ).name
               }
             />
-            <IncomeExpenseSummaryValueCard
+            <IncomeExpensesSummaryValueCard
               amount={
                 summaryData.find(
                   (entry) => entry.name === EXPENSE_TYPES.LUXURY_EXPENSE
@@ -534,7 +370,7 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
           </Stack>
         </Grid>
         <Grid item xs={12} md={6}>
-          <IncomeExpenseSummaryValueCard
+          <IncomeExpensesSummaryValueCard
             amount={selectedMonthTotalExpenses} // selected month total spending
             color={
               // good if spending is less than previous month
@@ -565,65 +401,20 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
         </Grid>
         <Grid item xs={12} md={6} paddingLeft={{ xs: 0, md: 1 }}>
           <Card elevation={4}>
-            <ResponsiveContainer width="100%" height={300}>
-              {gaugeVisualData.length === 0 ||
-              selectedMonthTotalExpenses === 0 ? (
-                <CenteredBox>
-                  {selectedMonthTotalExpenses === 0 ? (
-                    <Typography sx={{ fontStyle: "italic" }}>
-                      No expense data
-                    </Typography>
-                  ) : (
-                    <Tooltip
-                      title="Selected month or preceding selected month need to have at least one main income entry to show percentage of main income spent visual"
-                      enterTouchDelay={0}
-                    >
-                      <Typography sx={{ fontStyle: "italic" }}>
-                        Insufficient main income data
-                      </Typography>
-                    </Tooltip>
-                  )}
-                </CenteredBox>
-              ) : (
-                <PieChart>
-                  <Pie
-                    dataKey="value"
-                    nameKey="name"
-                    data={gaugeVisualData}
-                    cx="50%"
-                    cy="90%"
-                    startAngle={180}
-                    endAngle={0}
-                    innerRadius={60}
-                    outerRadius={70}
-                    activeIndex={gaugeVisualData.map((_, index) => index)} // all gauge data are displayed as active to show more data on each sector
-                    activeShape={renderActiveSector}
-                  />
-                </PieChart>
-              )}
-            </ResponsiveContainer>
+            <SavingsGaugeVisual
+              {...{
+                gaugeVisualData,
+                selectedMonthTotalExpenses,
+              }}
+            />
           </Card>
         </Grid>
         <Grid item xs={12}>
           <Card elevation={4}>
-            <DataGrid
-              rows={data}
-              columns={columns}
-              getRowId={(row) => row.uniqueId} // MUI datagrid mandates that all rows need a unique id
-              hideScrollbar
-              disableColumnMenu
-              autoHeight
-              sx={{ px: { xs: 0, md: 1 }, borderStyle: "none" }}
-              initialState={{
-                pagination: { paginationModel: { pageSize: 5 } },
-              }}
-              pageSizeOptions={[5, 10, 20]}
-              localeText={{
-                noRowsLabel: (
-                  <Typography sx={{ fontStyle: "italic" }}>
-                    No income or expense data
-                  </Typography>
-                ),
+            <IncomeExpensesDataGrid
+              {...{
+                data,
+                handleDeleteRow,
               }}
             />
           </Card>

@@ -3,7 +3,7 @@ import React from "react";
 import CenteredBox from "../util/CenteredBox";
 import { formatCurrency } from "../util/util";
 
-const IncomeExpenseSummaryValueCard = ({
+const IncomeExpensesSummaryValueCard = ({
   amount,
   color,
   name,
@@ -25,4 +25,4 @@ const IncomeExpenseSummaryValueCard = ({
   );
 };
 
-export default IncomeExpenseSummaryValueCard;
+export default IncomeExpensesSummaryValueCard;
