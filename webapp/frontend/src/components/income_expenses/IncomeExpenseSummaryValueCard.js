@@ -3,14 +3,23 @@ import React from "react";
 import CenteredBox from "../util/CenteredBox";
 import { formatCurrency } from "../util/util";
 
-const IncomeExpenseSummaryValueCard = ({ amount, color, name }) => {
+const IncomeExpenseSummaryValueCard = ({
+  amount,
+  color,
+  name,
+  isLargeCard = false,
+  icon = null,
+}) => {
   return (
-    <Card elevation={4} sx={{ flex: 1, py: 2 }}>
+    <Card elevation={4} sx={{ flex: 1, p: 2, height: "100%" }}>
       <CenteredBox>
-        <Typography variant="h5" color={color}>
+        <Typography variant={isLargeCard ? "h3" : "h5"} color={color}>
           {formatCurrency(amount)}
+          {isLargeCard && icon} {/* only show icons for large cards */}
         </Typography>
-        <Typography variant="caption">{name}</Typography>
+        <Typography variant={isLargeCard ? "subtitle1" : "caption"}>
+          {name}
+        </Typography>
       </CenteredBox>
     </Card>
   );

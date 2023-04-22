@@ -22,6 +22,14 @@ const currencyFormatter = new Intl.NumberFormat("ms-MY", {
 });
 export const formatCurrency = (amount) => currencyFormatter.format(amount);
 
+// format numbers in percentage string format
+const percentageFormatter = new Intl.NumberFormat("ms-MY", {
+  style: "percent",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+export const formatPercentage = (number) => percentageFormatter.format(number);
+
 // consistent date format throughout the app, DD/MM/YYYY, as all formats should be intuitively (smallest to biggest)
 export const formatDate = (date, isShortForm = false) =>
   dayjs(date).format(!isShortForm ? "DD/MM/YYYY" : "DD/MM");

@@ -3,7 +3,6 @@ import {
   Card,
   Chip,
   Grid,
-  IconButton,
   Stack,
   Tooltip,
   Typography,
@@ -17,24 +16,15 @@ import axios from "axios";
 import {
   formatCurrency,
   formatDate,
+  formatPercentage,
   getThemeColors,
   intDayToShortDay,
   isSmallScreen,
 } from "../util/util";
-import { Delete } from "@mui/icons-material";
+import { Check, Close, Delete } from "@mui/icons-material";
 import IncomeExpensesConfirmDeleteEntryDialog from "./IncomeExpensesConfirmDeleteEntryDialog";
 import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-} from "recharts";
+import { ResponsiveContainer, PieChart, Pie, Sector } from "recharts";
 import IncomeExpenseSummaryValueCard from "./IncomeExpenseSummaryValueCard";
 
 // ensure income expense entry types' state values are fixed by storing into a obj dict
@@ -119,6 +109,14 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
   );
 
   const [data, setData] = useState([]);
+
+  const [selectedMonthTotalExpenses, setSelectedMonthTotalExpenses] =
+    useState(0);
+  const [previousMonthTotalExpenses, setPreviousMonthTotalExpenses] =
+    useState(0);
+
+  const [gaugeVisualData, setGaugeVisualData] = useState([]);
+
   const [summaryData, setSummaryData] = useState([
     {
       name: INCOME_TYPES.MAIN_INCOME,
@@ -147,58 +145,238 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
   ]);
 
   // helper function to sum entry amount by type
-  const totalEntryAmountByType = (entries, type, isMain) =>
+  const totalEntryAmountByType = (entries, type, isMain = undefined) =>
     entries.reduce(
       (acc, entry) =>
-        entry.type === type && entry.is_main === isMain
+        entry.type === type &&
+        (isMain === undefined || entry.is_main === isMain) // if no isMain param parsed, then reduce by entry.type alone
           ? acc + parseFloat(entry.amount)
           : acc,
       0
     );
 
   useEffect(() => {
-    axios
-      .get(
-        `/api/income-expense-list?month=${
-          month.month() + 1
-        }&year=${month.year()}`
-      )
-      .then((response) => {
-        const processedData = response.data.map((entry) => ({
+    // request1 - get selected month data
+    const request1 = axios.get(
+      `/api/income-expense-list?month=${month.month() + 1}&year=${month.year()}`
+    );
+
+    // request2 - for comparison visuals, get previous month total expenses
+    const request2 = axios.get(
+      `/api/income-expense-list?month=${
+        month.month() === 0 ? 12 : month.month()
+      }&year=${month.month() === 0 ? month.year() - 1 : month.year()}`
+    );
+
+    // only when both selected and previous month data is retrieved, data for all visuals are ready
+    Promise.all([request1, request2])
+      .then(([response1, response2]) => {
+        const selectedMonthData = response1.data.map((entry) => ({
           ...entry,
           uniqueId: entry.type + entry.id, // a unique identifier for each row, since entries are pulled from both income and expense table
         }));
+        const previousMonthData = response2.data.map((entry) => ({
+          ...entry,
+          uniqueId: entry.type + entry.id,
+        }));
 
-        setData(processedData);
+        // deal with selected month data
+        const totalMainIncome = totalEntryAmountByType(
+          selectedMonthData,
+          "I",
+          true
+        );
+        const totalSideIncome = totalEntryAmountByType(
+          selectedMonthData,
+          "I",
+          false
+        );
+        const totalNecessaryExpense = totalEntryAmountByType(
+          selectedMonthData,
+          "E",
+          true
+        );
+        const totalLuxuryExpense = totalEntryAmountByType(
+          selectedMonthData,
+          "E",
+          false
+        );
+
+        const totalIncome = totalEntryAmountByType(selectedMonthData, "I");
+        const totalExpenses = totalEntryAmountByType(selectedMonthData, "E");
+
+        setData(selectedMonthData);
         setSummaryData([
           {
             name: INCOME_TYPES.MAIN_INCOME,
             type: "I",
-            value: totalEntryAmountByType(processedData, "I", true),
+            value: totalMainIncome,
             fill: themeColors.positiveStrong,
           },
           {
             name: INCOME_TYPES.SIDE_INCOME,
             type: "I",
-            value: totalEntryAmountByType(processedData, "I", false),
+            value: totalSideIncome,
             fill: themeColors.positive,
           },
           {
             name: EXPENSE_TYPES.NECESSARY_EXPENSE,
             type: "E",
-            value: totalEntryAmountByType(processedData, "E", true),
+            value: totalNecessaryExpense,
             fill: themeColors.negativeStrong,
           },
           {
             name: EXPENSE_TYPES.LUXURY_EXPENSE,
             type: "E",
-            value: totalEntryAmountByType(processedData, "E", false),
+            value: totalLuxuryExpense,
             fill: themeColors.negative,
           },
         ]);
+
+        setSelectedMonthTotalExpenses(totalExpenses);
+
+        // deal with previous month data
+        const previousTotalExpenses = totalEntryAmountByType(
+          previousMonthData,
+          "E"
+        );
+        const previousTotalMainIncome = totalEntryAmountByType(
+          previousMonthData,
+          "I",
+          true
+        );
+
+        setPreviousMonthTotalExpenses(previousTotalExpenses);
+
+        // lastly, use both month data to create gauge visual data
+        // gauge visual data format is always 1) [{total expenses}, {total income - total expenses AKA savings}] or just 2) [{total expenses}]
+        // savings may use selected month income, if none, use previous month main income to calculate (in this case, its an estimation)
+        if (totalIncome > 0) {
+          // use selected month main income
+          if (totalExpenses > totalIncome)
+            // total income fully spent, none remaining
+            setGaugeVisualData([
+              {
+                name: "Expenses [EXCEEDED INCOME]",
+                value: totalExpenses,
+                fill: themeColors.negative,
+              },
+            ]);
+          else
+            setGaugeVisualData([
+              {
+                name: "Expenses",
+                value: totalExpenses,
+                fill: themeColors.negative,
+              },
+              {
+                name: "Savings",
+                value: totalIncome - totalExpenses,
+                fill: themeColors.positive,
+              },
+            ]);
+        } else if (previousTotalMainIncome > 0) {
+          // use previous month main income
+          if (totalExpenses > previousTotalMainIncome)
+            // estimated income fully spent, none remaining
+            setGaugeVisualData([
+              {
+                name: "Expenses [EXCEEDED ESTIMATED INCOME]",
+                value: totalExpenses,
+                fill: themeColors.negative,
+              },
+            ]);
+          else
+            setGaugeVisualData([
+              {
+                name: "Expenses",
+                value: totalExpenses,
+                fill: themeColors.negative,
+              },
+              {
+                name: "[Estimated] Savings",
+                value: previousTotalMainIncome - totalExpenses,
+                fill: themeColors.positive,
+              },
+            ]);
+        } else {
+          // insufficient income data, no visual to show
+          setGaugeVisualData([]);
+        }
       })
       .catch((error) => console.log(error.message));
   }, [month, refreshSignal]);
+
+  const renderActiveSector = (props) => {
+    const RADIAN = Math.PI / 180;
+    const {
+      cx,
+      cy,
+      midAngle,
+      innerRadius,
+      outerRadius,
+      startAngle,
+      endAngle,
+      fill,
+      percent,
+      name,
+      value,
+    } = props;
+    const sin = Math.sin(-RADIAN * midAngle);
+    const cos = Math.cos(-RADIAN * midAngle);
+    const sx = cx + (outerRadius + 10) * cos;
+    const sy = cy + (outerRadius + 10) * sin;
+    const mx = cx + (outerRadius + 10) * cos;
+    const my = cy + (outerRadius + 130) * sin;
+    const ex = mx + (cos >= 0 ? 1 : -1) * 22;
+    const ey = my;
+
+    const tWidth = isSmallScreen() ? 150 : 300; // for everything to be visible, require the text to breakline if its small screen
+    const tHeight = 150;
+    const tx = ex + (cos >= 0 ? 1 : -1) * 12 - (cos >= 0 ? 0 : tWidth);
+    const ty = ey - 37;
+    const tAlign = cos >= 0 ? "left" : "right";
+
+    return (
+      <g>
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+        />
+        <Sector
+          cx={cx}
+          cy={cy}
+          startAngle={startAngle - 2}
+          endAngle={endAngle + 2}
+          innerRadius={outerRadius + 6}
+          outerRadius={outerRadius + 10}
+          fill={fill}
+        />
+        <path
+          d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
+          stroke={fill}
+          fill="none"
+        />
+        <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
+        <foreignObject x={tx} y={ty} width={tWidth} height={tHeight}>
+          <Box component="div" sx={{ textAlign: tAlign }}>
+            <Typography variant="caption">
+              <b>{name}</b>
+              <br />
+              {formatCurrency(value)}
+              <br />
+              {`(${(percent * 100).toFixed(2)}%)`}
+            </Typography>
+          </Box>
+        </foreignObject>
+      </g>
+    );
+  };
 
   const [confirmDeleteEntryDialogOpen, setConfirmDeleteEntryDialogOpen] =
     useState(false);
@@ -237,9 +415,8 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
           <Card elevation={4}>
             <ResponsiveContainer width="100%" height={300}>
               {summaryData
-                .filter((summaryValue) => summaryValue.type === "I")
-                .reduce((acc, summaryValue) => acc + summaryValue.value, 0) ===
-              0 ? (
+                .filter((entry) => entry.type === "I")
+                .reduce((acc, entry) => acc + entry.value, 0) === 0 ? (
                 <CenteredBox>
                   <Typography sx={{ fontStyle: "italic" }}>
                     No income data
@@ -250,9 +427,7 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
                   <Pie
                     dataKey="value"
                     nameKey="name"
-                    data={summaryData.filter(
-                      (summaryValue) => summaryValue.type === "I"
-                    )}
+                    data={summaryData.filter((entry) => entry.type === "I")}
                     cx="50%"
                     cy="50%"
                     innerRadius={50}
@@ -272,30 +447,26 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
             <IncomeExpenseSummaryValueCard
               amount={
                 summaryData.find(
-                  (summaryValue) =>
-                    summaryValue.name === INCOME_TYPES.MAIN_INCOME
+                  (entry) => entry.name === INCOME_TYPES.MAIN_INCOME
                 ).value
               }
               color={themeColors.positiveStrong}
               name={
                 summaryData.find(
-                  (summaryValue) =>
-                    summaryValue.name === INCOME_TYPES.MAIN_INCOME
+                  (entry) => entry.name === INCOME_TYPES.MAIN_INCOME
                 ).name
               }
             />
             <IncomeExpenseSummaryValueCard
               amount={
                 summaryData.find(
-                  (summaryValue) =>
-                    summaryValue.name === INCOME_TYPES.SIDE_INCOME
+                  (entry) => entry.name === INCOME_TYPES.SIDE_INCOME
                 ).value
               }
               color={themeColors.positive}
               name={
                 summaryData.find(
-                  (summaryValue) =>
-                    summaryValue.name === INCOME_TYPES.SIDE_INCOME
+                  (entry) => entry.name === INCOME_TYPES.SIDE_INCOME
                 ).name
               }
             />
@@ -305,9 +476,8 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
           <Card elevation={4}>
             <ResponsiveContainer width="100%" height={300}>
               {summaryData
-                .filter((summaryValue) => summaryValue.type === "E")
-                .reduce((acc, summaryValue) => acc + summaryValue.value, 0) ===
-              0 ? (
+                .filter((entry) => entry.type === "E")
+                .reduce((acc, entry) => acc + entry.value, 0) === 0 ? (
                 <CenteredBox>
                   <Typography sx={{ fontStyle: "italic" }}>
                     No expense data
@@ -318,9 +488,7 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
                   <Pie
                     dataKey="value"
                     nameKey="name"
-                    data={summaryData.filter(
-                      (summaryValue) => summaryValue.type === "E"
-                    )}
+                    data={summaryData.filter((entry) => entry.type === "E")}
                     cx="50%"
                     cy="50%"
                     innerRadius={50}
@@ -340,34 +508,101 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
             <IncomeExpenseSummaryValueCard
               amount={
                 summaryData.find(
-                  (summaryValue) =>
-                    summaryValue.name === EXPENSE_TYPES.NECESSARY_EXPENSE
+                  (entry) => entry.name === EXPENSE_TYPES.NECESSARY_EXPENSE
                 ).value
               }
               color={themeColors.negativeStrong}
               name={
                 summaryData.find(
-                  (summaryValue) =>
-                    summaryValue.name === EXPENSE_TYPES.NECESSARY_EXPENSE
+                  (entry) => entry.name === EXPENSE_TYPES.NECESSARY_EXPENSE
                 ).name
               }
             />
             <IncomeExpenseSummaryValueCard
               amount={
                 summaryData.find(
-                  (summaryValue) =>
-                    summaryValue.name === EXPENSE_TYPES.LUXURY_EXPENSE
+                  (entry) => entry.name === EXPENSE_TYPES.LUXURY_EXPENSE
                 ).value
               }
               color={themeColors.negative}
               name={
                 summaryData.find(
-                  (summaryValue) =>
-                    summaryValue.name === EXPENSE_TYPES.LUXURY_EXPENSE
+                  (entry) => entry.name === EXPENSE_TYPES.LUXURY_EXPENSE
                 ).name
               }
             />
           </Stack>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <IncomeExpenseSummaryValueCard
+            amount={selectedMonthTotalExpenses} // selected month total spending
+            color={
+              // good if spending is less than previous month
+              selectedMonthTotalExpenses > previousMonthTotalExpenses
+                ? themeColors.negative
+                : themeColors.positive
+            }
+            // selected month vs previous month total spending
+            name={
+              `Previous Month: ${formatCurrency(previousMonthTotalExpenses)}` +
+              (selectedMonthTotalExpenses > 0 || previousMonthTotalExpenses > 0
+                ? ` (${formatPercentage(
+                    (previousMonthTotalExpenses - selectedMonthTotalExpenses) /
+                      previousMonthTotalExpenses
+                  )})`
+                : ``)
+            }
+            isLargeCard
+            icon={
+              // good if spending is less than previous month
+              selectedMonthTotalExpenses > previousMonthTotalExpenses ? (
+                <Close />
+              ) : (
+                <Check />
+              )
+            }
+          />
+        </Grid>
+        <Grid item xs={12} md={6} paddingLeft={{ xs: 0, md: 1 }}>
+          <Card elevation={4}>
+            <ResponsiveContainer width="100%" height={300}>
+              {gaugeVisualData.length === 0 ||
+              selectedMonthTotalExpenses === 0 ? (
+                <CenteredBox>
+                  {selectedMonthTotalExpenses === 0 ? (
+                    <Typography sx={{ fontStyle: "italic" }}>
+                      No expense data
+                    </Typography>
+                  ) : (
+                    <Tooltip
+                      title="Selected month or preceding selected month need to have at least one main income entry to show percentage of main income spent visual"
+                      enterTouchDelay={0}
+                    >
+                      <Typography sx={{ fontStyle: "italic" }}>
+                        Insufficient main income data
+                      </Typography>
+                    </Tooltip>
+                  )}
+                </CenteredBox>
+              ) : (
+                <PieChart>
+                  <Pie
+                    dataKey="value"
+                    nameKey="name"
+                    data={gaugeVisualData}
+                    cx="50%"
+                    cy="90%"
+                    startAngle={180}
+                    endAngle={0}
+                    innerRadius={60}
+                    outerRadius={70}
+                    activeIndex={gaugeVisualData.map((_, index) => index)} // all gauge data are displayed as active to show more data on each sector
+                    activeShape={renderActiveSector}
+                  />
+                </PieChart>
+              )}
+            </ResponsiveContainer>
+          </Card>
         </Grid>
         <Grid item xs={12}>
           <Card elevation={4}>
@@ -383,6 +618,13 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
                 pagination: { paginationModel: { pageSize: 5 } },
               }}
               pageSizeOptions={[5, 10, 20]}
+              localeText={{
+                noRowsLabel: (
+                  <Typography sx={{ fontStyle: "italic" }}>
+                    No income or expense data
+                  </Typography>
+                ),
+              }}
             />
           </Card>
         </Grid>
