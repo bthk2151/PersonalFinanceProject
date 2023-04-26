@@ -30,7 +30,7 @@ const IncomeExpensesConfirmDeleteEntryDialog = ({
     axios
       .delete(endpoint)
       .then((response) => {
-        refreshData();
+        refreshData("INCOME_EXPENSE");
         handleClose();
       })
       .catch((error) => console.log(error.message));

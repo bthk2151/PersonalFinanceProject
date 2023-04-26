@@ -175,7 +175,9 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
         setEntryAmount("");
 
         // refresh visuals in IncomeExpenseVisuals.js
-        refreshData();
+        if (entryCategory != ENTRY_CATEGORIES.DEBTOR_CREDITOR)
+          refreshData("INCOME_EXPENSE");
+        else refreshData("DEBTOR_CREDITOR");
       })
       .catch((error) =>
         // collapse in the alert component to indicate error in creation
@@ -227,7 +229,7 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
     <form onSubmit={handleSubmit} noValidate autoComplete="off">
       <Grid container rowSpacing={2}>
         <Grid item xs={12}>
-          <Typography variant="h6">Create an entry</Typography>
+          <Typography variant="h5">Create an entry</Typography>
         </Grid>
         <Grid item xs={12}>
           <ToggleButtonGroup
@@ -283,7 +285,7 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
             error={Boolean(entrySubmitErrors.amount)}
           />
         </Grid>
-        <Grid item xs={7} md={3}>
+        <Grid item xs={7} md={3} sx={{ mb: { xs: 2, md: 0 } }}>
           {renderEntrySubtypeToggleButton()}
         </Grid>
         <Grid item xs={5} md={9} paddingRight={{ xs: 0, md: 1 }}>
@@ -304,7 +306,7 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
             </GridBox>
           )}
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid item xs={12} md={3} sx={{ mb: { xs: 0, md: 2 } }}>
           <GridBox justifyContent={{ xs: "flex-end", md: "flex-start" }}>
             <Button
               color={

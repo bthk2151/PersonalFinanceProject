@@ -1,30 +1,12 @@
-import {
-  Box,
-  Card,
-  Chip,
-  Grid,
-  Stack,
-  Tooltip,
-  Typography,
-} from "@mui/material";
+import { Card, Collapse, Grid, Stack, Typography } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import GridBox from "../util/GridBox";
-import CenteredBox from "../util/CenteredBox";
 import axios from "axios";
-import {
-  formatCurrency,
-  formatDate,
-  formatPercentage,
-  getThemeColors,
-  intDayToShortDay,
-  isSmallScreen,
-} from "../util/util";
-import { Check, Close, Delete } from "@mui/icons-material";
+import { formatCurrency, formatPercentage, getThemeColors } from "../util/util";
+import { Check, Close } from "@mui/icons-material";
 import IncomeExpensesConfirmDeleteEntryDialog from "./IncomeExpensesConfirmDeleteEntryDialog";
-import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
-import { ResponsiveContainer, PieChart, Pie, Sector } from "recharts";
 import IncomeExpensesSummaryValueCard from "./IncomeExpensesSummaryValueCard";
 import IncomeExpensesDataGrid from "./IncomeExpensesDataGrid";
 import SavingsGaugeVisual from "./SavingsGaugeVisual";
@@ -40,7 +22,7 @@ const EXPENSE_TYPES = {
   LUXURY_EXPENSE: "Luxury Expense",
 };
 
-const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
+const IncomeExpensesVisuals = ({ refreshData, incomeExpenseRefreshSignal }) => {
   const themeColors = getThemeColors();
 
   const [selectedMonthYear, setSelectedMonthYear] = useState(dayjs(new Date())); // always default visuals to current month
@@ -111,7 +93,7 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
       }`
     );
 
-    // only when both selected and previous month data is retrieved, data for all visuals are ready
+    // only when both selected and previous month data is retrieved, data for all income expenses visuals are ready
     Promise.all([request1, request2])
       .then(([response1, response2]) => {
         const selectedMonthData = response1.data.map((entry) => ({
@@ -248,7 +230,7 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
         }
       })
       .catch((error) => console.log(error.message));
-  }, [selectedMonthYear, refreshSignal]);
+  }, [selectedMonthYear, incomeExpenseRefreshSignal]);
 
   const [confirmDeleteEntryDialogOpen, setConfirmDeleteEntryDialogOpen] =
     useState(false);
@@ -262,7 +244,7 @@ const IncomeExpensesVisuals = ({ refreshData, refreshSignal }) => {
     <>
       <Grid container rowSpacing={2}>
         <Grid item xs={7}>
-          <Typography variant="h6">Income & Expenses</Typography>
+          <Typography variant="h5">Income & Expenses</Typography>
         </Grid>
         <Grid item xs={5}>
           <GridBox justifyContent="flex-end">

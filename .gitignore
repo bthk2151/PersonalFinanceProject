@@ -3,3 +3,4 @@ webapp/personal_finance_project/.env
 webapp/*/__pycache__/
 *.pyc
 webapp/frontend/static/frontend/*
+.vscode/settings.json

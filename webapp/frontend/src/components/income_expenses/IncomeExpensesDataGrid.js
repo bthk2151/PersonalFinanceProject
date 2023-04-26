@@ -90,7 +90,7 @@ const IncomeExpensesDataGrid = ({ data, handleDeleteRow }) => {
       localeText={{
         noRowsLabel: (
           <Typography sx={{ fontStyle: "italic" }}>
-            No income or expense data
+            No income / expense data
           </Typography>
         ),
       }}
