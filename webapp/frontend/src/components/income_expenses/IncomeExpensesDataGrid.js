@@ -4,13 +4,22 @@ import React, { useMemo } from "react";
 import {
   formatCurrency,
   formatDate,
+  getThemeColors,
   intDayToShortDay,
   isSmallScreen,
 } from "../util/util";
 import dayjs from "dayjs";
-import { Delete } from "@mui/icons-material";
+import {
+  Delete,
+  KeyboardArrowDown,
+  KeyboardArrowUp,
+  KeyboardDoubleArrowDown,
+  KeyboardDoubleArrowUp,
+} from "@mui/icons-material";
 
 const IncomeExpensesDataGrid = ({ data, handleDeleteRow }) => {
+  const themeColors = getThemeColors();
+
   const columns = useMemo(
     () => [
       {
@@ -53,6 +62,43 @@ const IncomeExpensesDataGrid = ({ data, handleDeleteRow }) => {
         flex: 1,
       },
       {
+        field: "is_main",
+        headerName: "",
+        renderCell: (params) =>
+          params.row.type === "I" ? (
+            params.value ? (
+              <KeyboardDoubleArrowUp
+                fontSize="large"
+                sx={{
+                  color: themeColors.positiveStrong,
+                }}
+              />
+            ) : (
+              <KeyboardArrowUp
+                fontSize="large"
+                sx={{
+                  color: themeColors.positive,
+                }}
+              />
+            )
+          ) : params.value ? (
+            <KeyboardDoubleArrowDown
+              fontSize="large"
+              sx={{
+                color: themeColors.negativeStrong,
+              }}
+            />
+          ) : (
+            <KeyboardArrowDown
+              fontSize="large"
+              sx={{
+                color: themeColors.negative,
+              }}
+            />
+          ),
+        flex: 0.1,
+      },
+      {
         field: "actions",
         type: "actions",
         getActions: (params) => [
@@ -82,7 +128,32 @@ const IncomeExpensesDataGrid = ({ data, handleDeleteRow }) => {
       disableColumnMenu
       disableRowSelectionOnClick
       autoHeight
-      sx={{ px: { xs: 0, md: 1 }, borderStyle: "none" }}
+      getCellClassName={(params) => {
+        console.log(params);
+        return params.row.type === "I"
+          ? params.row.is_main
+            ? "main-income-cell"
+            : "side-income-cell"
+          : params.row.is_main
+          ? "necessary-expense-cell"
+          : "luxury-expense-cell";
+      }}
+      sx={{
+        px: { xs: 0, md: 1 },
+        border: "none",
+        "& .main-income-cell:hover": {
+          color: themeColors.positiveStrong,
+        },
+        "& .side-income-cell:hover": {
+          color: themeColors.positive,
+        },
+        "& .necessary-expense-cell:hover": {
+          color: themeColors.negativeStrong,
+        },
+        "& .luxury-expense-cell:hover": {
+          color: themeColors.negative,
+        },
+      }}
       initialState={{
         pagination: { paginationModel: { pageSize: 5 } },
       }}
@@ -93,6 +164,9 @@ const IncomeExpensesDataGrid = ({ data, handleDeleteRow }) => {
             No income / expense data
           </Typography>
         ),
+      }}
+      columnVisibilityModel={{
+        is_main: !isSmallScreen(), // hide column is_main / is_necessary icon if it's a small screen, no space lol
       }}
     />
   );
