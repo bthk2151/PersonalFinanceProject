@@ -1,5 +1,10 @@
 import { Box, Chip, Tooltip, Typography } from "@mui/material";
-import { DataGrid, GridActionsCellItem } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  GridActionsCellItem,
+  gridNumberComparator,
+  gridStringOrNumberComparator,
+} from "@mui/x-data-grid";
 import React, { useMemo } from "react";
 import {
   formatCurrency,
@@ -64,9 +69,15 @@ const IncomeExpensesDataGrid = ({ data, handleDeleteRow }) => {
       {
         field: "is_main",
         headerName: "",
-        renderCell: (params) =>
-          params.row.type === "I" ? (
-            params.value ? (
+        valueGetter: (params) => ({
+          is_main: params.value,
+          type: params.row.type,
+        }),
+        renderCell: (
+          params // because of valueGetter above, params.value = { is_main, type }
+        ) =>
+          params.value.type === "I" ? (
+            params.value.is_main ? (
               <KeyboardDoubleArrowUp
                 fontSize="large"
                 sx={{
@@ -81,7 +92,7 @@ const IncomeExpensesDataGrid = ({ data, handleDeleteRow }) => {
                 }}
               />
             )
-          ) : params.value ? (
+          ) : params.value.is_main ? (
             <KeyboardDoubleArrowDown
               fontSize="large"
               sx={{
@@ -96,6 +107,25 @@ const IncomeExpensesDataGrid = ({ data, handleDeleteRow }) => {
               }}
             />
           ),
+        sortComparator: (entry1, entry2, sortDirection) => {
+          // because of valueGetter above, entry1.value and entry2.value = { is_main, type }
+          const typeComparison =
+            gridStringOrNumberComparator(
+              entry1.type,
+              entry2.type,
+              sortDirection
+            ) * -1; // MUI datagrid in-built sort comparator function, * -1 to have income by default before expense type
+
+          if (typeComparison !== 0) return typeComparison;
+
+          return (
+            gridNumberComparator(
+              entry1.is_main,
+              entry2.is_main,
+              sortDirection
+            ) * -1 // another MUI datagrid in-built sort comparator function, * -1 to have main (1) by default before main (0) type
+          );
+        },
         flex: 0.1,
       },
       {
@@ -119,6 +149,10 @@ const IncomeExpensesDataGrid = ({ data, handleDeleteRow }) => {
     []
   );
 
+  const columnVisibilityModel = {
+    is_main: !isSmallScreen(), // hide column is_main / is_necessary icon if it's a small screen, no space lol
+  };
+
   return (
     <DataGrid
       rows={data}
@@ -129,12 +163,11 @@ const IncomeExpensesDataGrid = ({ data, handleDeleteRow }) => {
       disableRowSelectionOnClick
       autoHeight
       getCellClassName={(params) => {
-        console.log(params);
         return params.row.type === "I"
-          ? params.row.is_main
+          ? params.row.is_main.is_main // because of valueGetter above, params.row.is_main = { is_main, type }
             ? "main-income-cell"
             : "side-income-cell"
-          : params.row.is_main
+          : params.row.is_main.is_main // because of valueGetter above, params.row.is_main = { is_main, type }
           ? "necessary-expense-cell"
           : "luxury-expense-cell";
       }}
@@ -165,9 +198,7 @@ const IncomeExpensesDataGrid = ({ data, handleDeleteRow }) => {
           </Typography>
         ),
       }}
-      columnVisibilityModel={{
-        is_main: !isSmallScreen(), // hide column is_main / is_necessary icon if it's a small screen, no space lol
-      }}
+      columnVisibilityModel={columnVisibilityModel}
     />
   );
 };
