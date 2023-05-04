@@ -2,9 +2,13 @@ import { Card, Collapse, Grid, Stack, Typography } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
-import GridBox from "../util/GridBox";
+import GridBox from "../utils/GridBox";
 import axios from "axios";
-import { formatCurrency, formatPercentage, getThemeColors } from "../util/util";
+import {
+  formatCurrency,
+  formatPercentage,
+  getThemeColors,
+} from "../utils/js-utils";
 import { Check, Close } from "@mui/icons-material";
 import IncomeExpensesConfirmDeleteEntryDialog from "./IncomeExpensesConfirmDeleteEntryDialog";
 import IncomeExpensesSummaryValueCard from "./IncomeExpensesSummaryValueCard";

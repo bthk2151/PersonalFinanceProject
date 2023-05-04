@@ -1,5 +1,5 @@
 import React from "react";
-import { formatCurrency } from "../util/util";
+import { formatCurrency } from "../utils/js-utils";
 import {
   Box,
   Button,

@@ -12,11 +12,11 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
-import DatePickerField from "../util/DatePickerField";
-import GridBox from "../util/GridBox";
-import MoneyTextField from "../util/MoneyTextField";
+import DatePickerField from "../utils/DatePickerField";
+import GridBox from "../utils/GridBox";
+import MoneyTextField from "../utils/MoneyTextField";
 import axios from "axios";
-import { capitalizeWords } from "../util/util.js";
+import { capitalizeWords } from "../utils/js-utils.js";
 
 // ensure entryCategory state values are fixed by storing into a obj dict
 const ENTRY_CATEGORIES = {

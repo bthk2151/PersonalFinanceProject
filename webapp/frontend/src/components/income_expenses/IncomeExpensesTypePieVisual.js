@@ -1,6 +1,6 @@
 import React from "react";
 import { Pie, PieChart, ResponsiveContainer } from "recharts";
-import CenteredBox from "../util/CenteredBox";
+import CenteredBox from "../utils/CenteredBox";
 import { Typography } from "@mui/material";
 
 const IncomeExpensesTypePieVisual = ({
