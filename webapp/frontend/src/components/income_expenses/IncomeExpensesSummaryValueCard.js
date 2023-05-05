@@ -1,7 +1,7 @@
 import { Card, Typography } from "@mui/material";
 import React from "react";
 import CenteredBox from "../utils/CenteredBox";
-import { formatCurrency } from "../utils/js-utils";
+import { formatCurrency } from "../../js-utils";
 
 const IncomeExpensesSummaryValueCard = ({
   amount,

@@ -16,7 +16,7 @@ import DatePickerField from "../utils/DatePickerField";
 import GridBox from "../utils/GridBox";
 import MoneyTextField from "../utils/MoneyTextField";
 import axios from "axios";
-import { capitalizeWords } from "../utils/js-utils.js";
+import { capitalizeWords } from "../../js-utils.js";
 
 // ensure entryCategory state values are fixed by storing into a obj dict
 const ENTRY_CATEGORIES = {

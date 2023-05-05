@@ -12,7 +12,7 @@ import {
   getThemeColors,
   intDayToShortDay,
   isSmallScreen,
-} from "../utils/js-utils";
+} from "../../js-utils";
 import dayjs from "dayjs";
 import {
   Delete,

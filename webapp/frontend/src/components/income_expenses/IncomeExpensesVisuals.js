@@ -8,7 +8,7 @@ import {
   formatCurrency,
   formatPercentage,
   getThemeColors,
-} from "../utils/js-utils";
+} from "../../js-utils";
 import { Check, Close } from "@mui/icons-material";
 import IncomeExpensesConfirmDeleteEntryDialog from "./IncomeExpensesConfirmDeleteEntryDialog";
 import IncomeExpensesSummaryValueCard from "./IncomeExpensesSummaryValueCard";

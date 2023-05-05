@@ -2,7 +2,7 @@ import React from "react";
 import { Pie, PieChart, ResponsiveContainer, Sector } from "recharts";
 import CenteredBox from "../utils/CenteredBox";
 import { Box, Tooltip, Typography } from "@mui/material";
-import { formatCurrency, isSmallScreen } from "../utils/js-utils";
+import { formatCurrency, isSmallScreen } from "../../js-utils";
 
 const SavingsGaugeVisual = ({
   gaugeVisualData,
