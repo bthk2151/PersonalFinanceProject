@@ -2,6 +2,7 @@
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 from django.db.models import Count, F, Value
 
@@ -15,16 +16,13 @@ from datetime import datetime
 
 
 class CreateIncomeView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]  # only authenticated users can use view
     # no need to explicitly specify the specific model when you have the associated serializer class (which is derived from the model)
     serializer_class = CreateIncomeSerializer
 
     def perform_create(self, serializer):
-        if not self.request.session.exists("user_id"):
-            # [CHANGE LATER] session.user_id should only exist if user is logged on, for now, all users is me
-            self.request.session["user_id"] = 1
-
         # non-posted additional model data to be saved
-        user = User.objects.get(id=self.request.session.get("user_id"))
+        user = self.request.user
         day_of_week = datetime.fromisoformat(
             str(serializer.validated_data["date"])
         ).weekday()
@@ -35,19 +33,17 @@ class CreateIncomeView(generics.CreateAPIView):
 
 
 class DeleteIncomeView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = DeleteIncomeSerializer
     queryset = Income.objects.all()
 
 
 class CreateExpenseView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = CreateExpenseSerializer
 
     def perform_create(self, serializer):
-        if not self.request.session.exists("user_id"):
-            # [CHANGE LATER] session.user_id should only exist if user is logged on, for now, all users is me
-            self.request.session["user_id"] = 1
-
-        user = User.objects.get(id=self.request.session.get("user_id"))
+        user = self.request.user
         day_of_week = datetime.fromisoformat(
             str(serializer.validated_data["date"])
         ).weekday()
@@ -57,55 +53,50 @@ class CreateExpenseView(generics.CreateAPIView):
 
 
 class DeleteExpenseView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = DeleteIncomeSerializer
     queryset = Expense.objects.all()
 
 
 class CreateDebtorView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = CreateDebtorSerializer
 
     def perform_create(self, serializer):
-        if not self.request.session.exists("user_id"):
-            # [CHANGE LATER] session.user_id should only exist if user is logged on, for now, all users is me
-            self.request.session["user_id"] = 1
-
-        user = User.objects.get(id=self.request.session.get("user_id"))
+        user = self.request.user
         serializer.save(user=user)
 
         return super().perform_create(serializer)
 
 
 class DeleteDebtorView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = DeleteDebtorSerializer
     queryset = Debtor.objects.all()
 
 
 class CreateCreditorView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = CreateCreditorSerializer
 
     def perform_create(self, serializer):
-        if not self.request.session.exists("user_id"):
-            # [CHANGE LATER] session.user_id should only exist if user is logged on, for now, all users is me
-            self.request.session["user_id"] = 1
-
-        user = User.objects.get(id=self.request.session.get("user_id"))
+        user = self.request.user
         serializer.save(user=user)
 
         return super().perform_create(serializer)
 
 
 class DeleteCreditorView(generics.DestroyAPIView):
+    permission_classes = [IsAuthenticated]
     serializer_class = DeleteCreditorSerializer
     queryset = Creditor.objects.all()
 
 
 class GetTop5EntriesOfEachIncomeExpenseCategoryView(APIView):
-    def get(self, request):
-        if not request.session.exists("user_id"):
-            # [CHANGE LATER] session.user_id should only exist if user is logged on, for now, all users is me
-            request.session["user_id"] = 1
+    permission_classes = [IsAuthenticated]
 
-        user = User.objects.get(id=request.session.get("user_id"))
+    def get(self, request):
+        user = request.user
 
         top_main_income_entries = (
             Income.objects.filter(user=user, is_main=True)
@@ -158,12 +149,10 @@ class GetTop5EntriesOfEachIncomeExpenseCategoryView(APIView):
 
 
 class GetIncomeExpenseListView(APIView):
-    def get(self, request):
-        if not request.session.exists("user_id"):
-            # [CHANGE LATER] session.user_id should only exist if user is logged on, for now, all users is me
-            request.session["user_id"] = 1
+    permission_classes = [IsAuthenticated]
 
-        user = User.objects.get(id=request.session.get("user_id"))
+    def get(self, request):
+        user = request.user
         month = request.query_params.get("month")
         year = request.query_params.get("year")
 
@@ -205,12 +194,10 @@ class GetIncomeExpenseListView(APIView):
 
 
 class GetDebtorCreditorListView(APIView):
-    def get(self, request):
-        if not request.session.exists("user_id"):
-            # [CHANGE LATER] session.user_id should only exist if user is logged on, for now, all users is me
-            request.session["user_id"] = 1
+    permission_classes = [IsAuthenticated]
 
-        user = User.objects.get(id=request.session.get("user_id"))
+    def get(self, request):
+        user = request.user
 
         debtor_query = (
             Debtor.objects.filter(user=user)

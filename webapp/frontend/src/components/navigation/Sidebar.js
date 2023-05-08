@@ -9,6 +9,7 @@ const Sidebar = ({
   sidebarMinWidth,
   mobileSidebarOpen,
   setMobileSidebarOpen,
+  handleLogout,
 }) => {
   return (
     <Box
@@ -39,7 +40,12 @@ const Sidebar = ({
           },
         }}
       >
-        <SidebarItems mode={mode} setMode={setMode} isComprehensive={false} />
+        <SidebarItems
+          mode={mode}
+          setMode={setMode}
+          handleLogout={handleLogout}
+          isComprehensive={false}
+        />
       </Drawer>
       {/* desktop sidebar */}
       <Drawer
@@ -53,7 +59,12 @@ const Sidebar = ({
           },
         }}
       >
-        <SidebarItems mode={mode} setMode={setMode} isComprehensive={true} />
+        <SidebarItems
+          mode={mode}
+          setMode={setMode}
+          handleLogout={handleLogout}
+          isComprehensive={true}
+        />
       </Drawer>
     </Box>
   );

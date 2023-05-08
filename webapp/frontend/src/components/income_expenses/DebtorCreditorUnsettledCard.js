@@ -1,5 +1,5 @@
 import React from "react";
-import { formatCurrency } from "../../js-utils";
+import { formatCurrency } from "../../utils/js-utils";
 import {
   Box,
   Button,
@@ -9,12 +9,13 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import dayjs from "dayjs";
-import axios from "axios";
+import useAuthAxios from "../../utils/useAuthAxios";
 
 const DebtorCreditorUnsettledCard = ({ entry, refreshData }) => {
+  const authAxios = useAuthAxios();
+
   const deleteEntry = (e) => {
-    axios
+    authAxios
       .delete(
         `/api/${entry.type === "D" ? "debtor" : "creditor"}/${entry.id}/delete`
       )

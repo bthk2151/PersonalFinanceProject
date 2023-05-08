@@ -1,9 +1,11 @@
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import AssetsLiabilitiesPage from "./AssetsLiabilitiesPage";
 import FinancialGoalPage from "./FinancialGoalPage";
 import IncomeExpensesPage from "./IncomeExpensesPage";
 import { Paper } from "@mui/material";
+import LoginPage from "./LoginPage";
+import AuthRoute from "./utils/AuthRoute";
 
 const MainPage = () => {
   return (
@@ -16,10 +18,17 @@ const MainPage = () => {
       }}
     >
       <Routes>
-        <Route path="/" exact element={<p>Login?</p>} />
-        <Route path="/financial-goal" element={<FinancialGoalPage />} />
-        <Route path="/assets-liabilities" element={<AssetsLiabilitiesPage />} />
-        <Route path="/income-expenses" element={<IncomeExpensesPage />} />
+        <Route path="/" exact element={<LoginPage />} />
+        <Route path="/register" exact element={<p>Register Page</p>} />
+        <Route element={<AuthRoute />}>
+          {/* below set of routes require authentication to access */}
+          <Route path="/financial-goal" element={<FinancialGoalPage />} />
+          <Route
+            path="/assets-liabilities"
+            element={<AssetsLiabilitiesPage />}
+          />
+          <Route path="/income-expenses" element={<IncomeExpensesPage />} />
+        </Route>
         <Route path="*" element={<p>Hmm, nothing here</p>} />
       </Routes>
     </Paper>

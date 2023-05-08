@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   Box,
   Toolbar,
@@ -10,31 +10,55 @@ import {
   ListItemText,
   Typography,
   Switch,
-  Avatar,
+  IconButton,
 } from "@mui/material";
 import {
   SportsScore,
   AccountBalance,
   CreditCard,
   DarkMode,
+  Logout,
+  Login,
+  PersonAdd,
 } from "@mui/icons-material";
 import { Link } from "react-router-dom";
+import AuthContext from "../../context/AuthContext";
 
-const pages = [
-  { name: "Financial Goal", icon: <SportsScore />, urlPath: "financial-goal" },
+const unauthPages = [
+  { name: "Login", icon: <Login />, urlPath: "/" },
+  {
+    name: "Register",
+    icon: <PersonAdd />,
+    urlPath: "/register",
+  },
+];
+
+const authPages = [
+  { name: "Financial Goal", icon: <SportsScore />, urlPath: "/financial-goal" },
   {
     name: "Assets & Liabilities",
     icon: <AccountBalance />,
-    urlPath: "assets-liabilities",
+    urlPath: "/assets-liabilities",
   },
   {
     name: "Income & Expenses",
     icon: <CreditCard />,
-    urlPath: "income-expenses",
+    urlPath: "/income-expenses",
   },
 ];
 
-const SidebarItems = ({ mode, setMode, isComprehensive }) => {
+const renderListItem = (page) => (
+  <ListItem key={page.name} disablePadding>
+    <ListItemButton component={Link} to={page.urlPath}>
+      <ListItemIcon>{page.icon}</ListItemIcon>
+      <ListItemText primary={page.name} />
+    </ListItemButton>
+  </ListItem>
+);
+
+const SidebarItems = ({ mode, setMode, handleLogout, isComprehensive }) => {
+  const { user } = useContext(AuthContext);
+
   const now = new Date();
   const greeting =
     now.getHours() >= 4 && now.getHours() < 12
@@ -43,36 +67,39 @@ const SidebarItems = ({ mode, setMode, isComprehensive }) => {
       ? "Good Afternoon"
       : "Good Evening";
 
+  const handleModeChange = (e) => {
+    const selectedMode = e.target.checked ? "dark" : "light";
+
+    setMode(selectedMode);
+    localStorage.setItem("mode", selectedMode);
+  };
+
   return (
     <>
       <Toolbar />
       <Divider />
-      {isComprehensive ? (
+      {isComprehensive && (
         <>
           <Box sx={{ display: "flex", justifyContent: "space-between" }}>
             <Box p={2}>
               <Typography>{greeting},</Typography>
-              <Typography variant="h6">Bryan</Typography>
+              <Typography variant="h6">
+                {user ? user.first_name : "Stranger"}
+              </Typography>
             </Box>
-            <Box p={2}>
-              <Avatar
-                sx={{ height: 50, width: 50 }}
-                src="https://avatars.githubusercontent.com/u/89057437?v=4"
-              />
+            <Box p={2} sx={{ display: "flex", alignItems: "center" }}>
+              {user && (
+                <IconButton onClick={handleLogout}>
+                  <Logout />
+                </IconButton>
+              )}
             </Box>
           </Box>
           <Divider />
         </>
-      ) : null}
+      )}
       <List>
-        {pages.map((page) => (
-          <ListItem key={page.name} disablePadding>
-            <ListItemButton component={Link} to={"/" + page.urlPath}>
-              <ListItemIcon>{page.icon}</ListItemIcon>
-              <ListItemText primary={page.name} />
-            </ListItemButton>
-          </ListItem>
-        ))}
+        {user ? authPages.map(renderListItem) : unauthPages.map(renderListItem)}
       </List>
       <Divider />
       <ListItem disablePadding>
@@ -81,10 +108,7 @@ const SidebarItems = ({ mode, setMode, isComprehensive }) => {
             <DarkMode />
           </ListItemIcon>
           <ListItemText>
-            <Switch
-              onChange={(e) => setMode(e.target.checked ? "dark" : "light")}
-              checked={mode === "dark"}
-            />
+            <Switch onChange={handleModeChange} checked={mode === "dark"} />
           </ListItemText>
         </ListItemButton>
       </ListItem>

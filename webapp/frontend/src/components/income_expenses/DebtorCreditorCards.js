@@ -1,14 +1,16 @@
 import { Divider, Grid, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import DebtorCreditorUnsettledCard from "./DebtorCreditorUnsettledCard";
-import axios from "axios";
+import useAuthAxios from "../../utils/useAuthAxios";
 
 const DebtorCreditorCards = ({ debtorCreditorRefreshSignal, refreshData }) => {
+  const authAxios = useAuthAxios();
+
   const [debtorCreditorData, setDebtorCreditorData] = useState([]);
 
   useEffect(() => {
     // get unsettled debtor and creditor data
-    axios
+    authAxios
       .get(`/api/debtor-creditor-list`)
       .then((response) => setDebtorCreditorData(response.data))
       .catch((error) => console.log(error.message));

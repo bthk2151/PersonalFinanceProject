@@ -7,8 +7,8 @@ import {
   DialogTitle,
   IconButton,
 } from "@mui/material";
-import axios from "axios";
 import React from "react";
+import useAuthAxios from "../../utils/useAuthAxios";
 
 const IncomeExpensesConfirmDeleteEntryDialog = ({
   confirmDeleteEntryDialogOpen,
@@ -17,6 +17,8 @@ const IncomeExpensesConfirmDeleteEntryDialog = ({
   setDeleteEntryRow,
   refreshData,
 }) => {
+  const authAxios = useAuthAxios();
+
   const handleClose = () => {
     setDeleteEntryRow({});
     setConfirmDeleteEntryDialogOpen(false);
@@ -27,7 +29,7 @@ const IncomeExpensesConfirmDeleteEntryDialog = ({
       deleteEntryRow.type === "I" ? "income" : "expense"
     }/${deleteEntryRow.id}/delete`;
 
-    axios
+    authAxios
       .delete(endpoint)
       .then((response) => {
         refreshData("INCOME_EXPENSE");

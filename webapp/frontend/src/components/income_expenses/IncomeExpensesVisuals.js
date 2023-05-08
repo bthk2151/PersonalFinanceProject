@@ -3,18 +3,18 @@ import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import GridBox from "../utils/GridBox";
-import axios from "axios";
 import {
   formatCurrency,
   formatPercentage,
   getThemeColors,
-} from "../../js-utils";
+} from "../../utils/js-utils";
 import { Check, Close } from "@mui/icons-material";
 import IncomeExpensesConfirmDeleteEntryDialog from "./IncomeExpensesConfirmDeleteEntryDialog";
 import IncomeExpensesSummaryValueCard from "./IncomeExpensesSummaryValueCard";
 import IncomeExpensesDataGrid from "./IncomeExpensesDataGrid";
 import SavingsGaugeVisual from "./SavingsGaugeVisual";
 import IncomeExpensesTypePieVisual from "./IncomeExpensesTypePieVisual";
+import useAuthAxios from "../../utils/useAuthAxios";
 
 // ensure income expense entry types' state values are fixed by storing into a obj dict
 const INCOME_TYPES = {
@@ -27,6 +27,8 @@ const EXPENSE_TYPES = {
 };
 
 const IncomeExpensesVisuals = ({ refreshData, incomeExpenseRefreshSignal }) => {
+  const authAxios = useAuthAxios();
+
   const themeColors = getThemeColors();
 
   const [selectedMonthYear, setSelectedMonthYear] = useState(dayjs(new Date())); // always default visuals to current month
@@ -80,14 +82,14 @@ const IncomeExpensesVisuals = ({ refreshData, incomeExpenseRefreshSignal }) => {
 
   useEffect(() => {
     // request1 - get selected month data
-    const request1 = axios.get(
+    const request1 = authAxios.get(
       `/api/income-expense-list?month=${
         selectedMonthYear.month() + 1
       }&year=${selectedMonthYear.year()}`
     );
 
     // request2 - for comparison visuals, get previous month total expenses
-    const request2 = axios.get(
+    const request2 = authAxios.get(
       `/api/income-expense-list?month=${
         selectedMonthYear.month() === 0 ? 12 : selectedMonthYear.month()
       }&year=${

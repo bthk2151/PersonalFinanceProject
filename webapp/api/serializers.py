@@ -1,11 +1,5 @@
 from rest_framework import serializers
-from .models import User, Income, Expense, Debtor, Creditor
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ("id", "email", "created_date_time")
+from .models import *
 
 
 class CreateIncomeSerializer(serializers.ModelSerializer):

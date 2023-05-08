@@ -1,15 +1,14 @@
-import {
-  AppBar,
-  IconButton,
-  Toolbar,
-  Box,
-  Avatar,
-  Typography,
-} from "@mui/material";
-import React from "react";
-import { Menu } from "@mui/icons-material";
+import { AppBar, IconButton, Toolbar, Box, Typography } from "@mui/material";
+import React, { useContext } from "react";
+import { Login, Logout, Menu } from "@mui/icons-material";
+import AuthContext from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
-const Topbar = ({ setMobileSidebarOpen }) => {
+const Topbar = ({ setMobileSidebarOpen, handleLogout }) => {
+  const { user } = useContext(AuthContext);
+
+  const navigate = useNavigate();
+
   return (
     <AppBar position="sticky" color="default">
       <Toolbar
@@ -25,13 +24,26 @@ const Topbar = ({ setMobileSidebarOpen }) => {
         >
           <Menu sx={{ color: "default" }} />
         </IconButton>
-        <Box p={2} sx={{ display: { xs: "flex", md: "none" }, gap: 2 }}>
-          <Typography variant="subtitle1">Bryan</Typography>
-          <Avatar
-            sx={{ height: 30, width: 30 }}
-            src="https://avatars.githubusercontent.com/u/89057437?v=4"
-          />
-        </Box>
+
+        {user ? (
+          <Box
+            p={2}
+            sx={{
+              display: { xs: "flex", md: "none" },
+              alignItems: { xs: "center", md: "normal" },
+              gap: 2,
+            }}
+          >
+            <Typography variant="subtitle1">{user.first_name}</Typography>
+            <IconButton onClick={handleLogout}>
+              <Logout />
+            </IconButton>
+          </Box>
+        ) : (
+          <IconButton onClick={() => navigate("/")}>
+            <Login />
+          </IconButton>
+        )}
       </Toolbar>
     </AppBar>
   );

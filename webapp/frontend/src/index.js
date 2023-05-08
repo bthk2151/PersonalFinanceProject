@@ -3,9 +3,9 @@ import React from "react";
 import App from "./App";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { AuthProvider } from "./context/AuthContext";
 
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
@@ -19,7 +19,9 @@ root.render(
   <React.StrictMode>
     <BrowserRouter>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <App />
+        <AuthProvider>
+          <App />
+        </AuthProvider>
       </LocalizationProvider>
     </BrowserRouter>
   </React.StrictMode>

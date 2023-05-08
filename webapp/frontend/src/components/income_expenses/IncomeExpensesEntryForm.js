@@ -15,8 +15,8 @@ import React, { useEffect, useState } from "react";
 import DatePickerField from "../utils/DatePickerField";
 import GridBox from "../utils/GridBox";
 import MoneyTextField from "../utils/MoneyTextField";
-import axios from "axios";
-import { capitalizeWords } from "../../js-utils.js";
+import { capitalizeWords } from "../../utils/js-utils.js";
+import useAuthAxios from "../../utils/useAuthAxios";
 
 // ensure entryCategory state values are fixed by storing into a obj dict
 const ENTRY_CATEGORIES = {
@@ -26,6 +26,8 @@ const ENTRY_CATEGORIES = {
 };
 
 const IncomeExpensesEntryForm = ({ refreshData }) => {
+  const authAxios = useAuthAxios();
+
   const [entryCategory, setEntryCategory] = useState(ENTRY_CATEGORIES.INCOME);
 
   const [entryName, setEntryName] = useState("");
@@ -158,7 +160,7 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
 
     const { name, endpoint, additionalParams } = endpointMap[entryCategory];
 
-    axios
+    authAxios
       .post(endpoint, { ...params, ...additionalParams })
       .then((response) => {
         // collapse in the alert component to indicate successful creation
@@ -198,7 +200,7 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
   const [currentSuggestedEntries, setCurrentSuggestedEntries] = useState([]);
   // on component load, fetch most common entry names from db
   useEffect(() => {
-    axios
+    authAxios
       .get("/api/top-income-expense-entries")
       .then((response) => {
         setSuggestedEntries(response.data);
