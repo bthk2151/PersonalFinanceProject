@@ -23,22 +23,10 @@ const App = () => {
     },
   });
 
-  const handleLogout = () => {
-    setAuthTokens(null);
-    setUser(null);
-
-    localStorage.removeItem("authTokens");
-
-    navigate("/");
-  };
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Topbar
-        setMobileSidebarOpen={setMobileSidebarOpen}
-        handleLogout={handleLogout}
-      />
+      <Topbar setMobileSidebarOpen={setMobileSidebarOpen} />
       <Box sx={{ display: "flex" }}>
         <Sidebar
           {...{
@@ -48,7 +36,6 @@ const App = () => {
             sidebarMinWidth,
             mobileSidebarOpen,
             setMobileSidebarOpen,
-            handleLogout,
           }}
         />
         <MainPage />

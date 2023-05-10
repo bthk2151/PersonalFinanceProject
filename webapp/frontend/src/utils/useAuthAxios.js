@@ -1,40 +1,87 @@
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import AuthContext from "../context/AuthContext";
 import axios from "axios";
 import jwtDecode from "jwt-decode";
 import dayjs from "dayjs";
 
-// custom react hook which returns an axios instance for authenticated requests
+// flag to ensure only a single refresh request can be done at a time
+// has to be a static variable shared across all useAuthAxios instances
+let isRefreshingToken = false;
+
+// custom hook which returns an axios instance for authenticated requests
 const useAuthAxios = () => {
-  // custom react hook used as its only way for context to be accessible
-  const { authTokens, setUser, setAuthTokens } = useContext(AuthContext);
+  const { authTokens, setUser, setAuthTokens, logoutUser } =
+    useContext(AuthContext);
 
-  const authAxios = axios.create();
+  // memoize authAxios instance to improve performance
+  const authAxios = useMemo(() => {
+    const axiosInstance = axios.create();
 
-  // intercept to check if access token is invalid or has expired
-  authAxios.interceptors.request.use(async (request) => {
-    if (!authTokens) return request; // if no authTokens, just proceed with the request which will result with an unauthorized response
+    // intercept requests to attach access tokens
+    axiosInstance.interceptors.request.use(async (request) => {
+      // if no authTokens, force logout user
+      if (!authTokens) {
+        logoutUser();
+        return request;
+      }
 
-    request.headers.Authorization = `Bearer ${authTokens.access}`; // add existing token to authorization header
+      // check if expired
+      const user = jwtDecode(authTokens.access);
+      const isExpired = dayjs().diff(dayjs.unix(user.exp)) > 0; // current datetime is after expiry datetime
 
-    // refresh token if expired
-    const user = jwtDecode(authTokens.access);
-    const isExpired = dayjs().diff(dayjs.unix(user.exp)) > 0; // current datetime is after expiry datetime
-    if (isExpired) {
-      // refresh auth tokens and use new tokens
-      const response = await axios.post("/api/token/refresh", {
-        refresh: authTokens.refresh,
-      });
+      // if current authTokens are still valid, proceed with request
+      if (!isExpired) {
+        request.headers.Authorization = `Bearer ${authTokens.access}`;
+        return request;
+      }
 
-      localStorage.setItem("authTokens", JSON.stringify(response.data));
-      request.headers.Authorization = `Bearer ${response.data.access}`;
+      // check if a refresh request is in progress
+      if (!isRefreshingToken) {
+        // only this single request is sent to refresh token
+        isRefreshingToken = true;
 
-      setAuthTokens(response.data);
-      setUser(jwtDecode(response.data.access));
-    }
+        try {
+          // refresh auth tokens and save new tokens
+          const response = await axios.post("/api/token/refresh", {
+            refresh: authTokens.refresh,
+          });
 
-    return request;
-  });
+          localStorage.setItem("authTokens", JSON.stringify(response.data));
+          request.headers.Authorization = `Bearer ${response.data.access}`;
+
+          setAuthTokens(response.data);
+          setUser(jwtDecode(response.data.access));
+        } catch (error) {
+          // if attempt to refresh with expired refresh token, force logout user
+          if (error.response?.data?.code === "token_not_valid") logoutUser();
+          else console.log(error.message);
+        } finally {
+          isRefreshingToken = false;
+        }
+      } else {
+        // wait for the current refresh request to complete
+        await new Promise((resolve) => {
+          const interval = setInterval(() => {
+            // check every 0.1 seconds
+            if (!isRefreshingToken) {
+              clearInterval(interval);
+              resolve();
+            }
+          }, 100);
+        });
+
+        // once refresh request completes, authTokens in localStorage are updated and ready to use
+        // note: MUST use authTokens in localStorage, as during this execution thread, authTokens stored in the state still references the old, expired token
+        request.headers.Authorization = `Bearer ${
+          JSON.parse(localStorage.getItem("authTokens")).access
+        }`;
+      }
+
+      return request;
+    });
+
+    return axiosInstance;
+  }, [authTokens]);
 
   return authAxios;
 };

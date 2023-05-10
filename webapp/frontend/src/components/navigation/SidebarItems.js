@@ -56,8 +56,8 @@ const renderListItem = (page) => (
   </ListItem>
 );
 
-const SidebarItems = ({ mode, setMode, handleLogout, isComprehensive }) => {
-  const { user } = useContext(AuthContext);
+const SidebarItems = ({ mode, setMode, isComprehensive }) => {
+  const { user, logoutUser } = useContext(AuthContext);
 
   const now = new Date();
   const greeting =
@@ -89,7 +89,7 @@ const SidebarItems = ({ mode, setMode, handleLogout, isComprehensive }) => {
             </Box>
             <Box p={2} sx={{ display: "flex", alignItems: "center" }}>
               {user && (
-                <IconButton onClick={handleLogout}>
+                <IconButton onClick={logoutUser}>
                   <Logout />
                 </IconButton>
               )}

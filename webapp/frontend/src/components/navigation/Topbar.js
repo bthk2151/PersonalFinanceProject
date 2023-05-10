@@ -4,8 +4,8 @@ import { Login, Logout, Menu } from "@mui/icons-material";
 import AuthContext from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
-const Topbar = ({ setMobileSidebarOpen, handleLogout }) => {
-  const { user } = useContext(AuthContext);
+const Topbar = ({ setMobileSidebarOpen }) => {
+  const { user, logoutUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
 
@@ -35,7 +35,7 @@ const Topbar = ({ setMobileSidebarOpen, handleLogout }) => {
             }}
           >
             <Typography variant="subtitle1">{user.first_name}</Typography>
-            <IconButton onClick={handleLogout}>
+            <IconButton onClick={logoutUser}>
               <Logout />
             </IconButton>
           </Box>
