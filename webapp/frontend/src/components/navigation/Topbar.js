@@ -1,4 +1,11 @@
-import { AppBar, IconButton, Toolbar, Box, Typography } from "@mui/material";
+import {
+  AppBar,
+  IconButton,
+  Toolbar,
+  Box,
+  Typography,
+  Tooltip,
+} from "@mui/material";
 import React, { useContext } from "react";
 import { Login, Logout, Menu } from "@mui/icons-material";
 import AuthContext from "../../context/AuthContext";
@@ -27,7 +34,6 @@ const Topbar = ({ setMobileSidebarOpen }) => {
 
         {user ? (
           <Box
-            p={2}
             sx={{
               display: { xs: "flex", md: "none" },
               alignItems: { xs: "center", md: "normal" },
@@ -35,14 +41,18 @@ const Topbar = ({ setMobileSidebarOpen }) => {
             }}
           >
             <Typography variant="subtitle1">{user.first_name}</Typography>
-            <IconButton onClick={logoutUser}>
-              <Logout />
-            </IconButton>
+            <Tooltip title="Logout">
+              <IconButton onClick={logoutUser}>
+                <Logout />
+              </IconButton>
+            </Tooltip>
           </Box>
         ) : (
-          <IconButton onClick={() => navigate("/")}>
-            <Login />
-          </IconButton>
+          <Tooltip title="Login">
+            <IconButton onClick={() => navigate("/")}>
+              <Login />
+            </IconButton>
+          </Tooltip>
         )}
       </Toolbar>
     </AppBar>

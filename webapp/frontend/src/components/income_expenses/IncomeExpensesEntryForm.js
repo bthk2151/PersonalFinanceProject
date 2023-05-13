@@ -8,6 +8,7 @@ import {
   TextField,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import dayjs from "dayjs";
@@ -48,7 +49,9 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
           }
         >
           <ToggleButton value={true} color="success">
-            <Typography variant="button">Main</Typography>
+            <Tooltip title="Maximum one main income entry per month">
+              <Typography variant="button">Main</Typography>
+            </Tooltip>
           </ToggleButton>
           <ToggleButton value={false} color="success">
             <Typography variant="button">Side</Typography>
@@ -96,11 +99,7 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
   const [entryDate, setEntryDate] = useState(dayjs(new Date()));
 
   // to store field respective error messages, if error exists
-  const [entrySubmitErrors, setEntrySubmitErrors] = useState({
-    name: null,
-    amount: null,
-    date: null,
-  });
+  const [fieldValidationErrors, setFieldValidationErrors] = useState(null);
 
   // used when an entry creation is successful / unsuccessful, to display alert
   const [entryCreationStatus, setEntryCreationStatus] = useState(null);
@@ -124,10 +123,12 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
         entryCategory != ENTRY_CATEGORIES.DEBTOR_CREDITOR &&
         !entryDate.isValid()
           ? "Date is required"
+          : entryDate.isAfter(dayjs(), "day")
+          ? "No future dates allowed"
           : null,
     };
 
-    setEntrySubmitErrors(errors); // note: state will only change when re-rendered, NOT immediately!
+    setFieldValidationErrors(errors);
 
     // proceed only if all fields are valid (all error message are null)
     if (!Object.values(errors).every((value) => value === null)) return;
@@ -166,9 +167,6 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
         // collapse in the alert component to indicate successful creation
         setEntryCreationStatus({
           isSuccess: true,
-          isIncomeOrDebtor:
-            entryCategory === ENTRY_CATEGORIES.INCOME ||
-            (entryCategory === ENTRY_CATEGORIES.DEBTOR_CREDITOR && isDebtor),
           message: `${name} entry (${entryName.trim()}) created successfully`,
         });
 
@@ -185,8 +183,10 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
         // collapse in the alert component to indicate error in creation
         setEntryCreationStatus({
           isSuccess: false,
-          color: "warning", // mui theme keyword for orange color
-          message: `ERROR: ${error.message}`,
+          // following json api error format: if there is a code, there should be a detail key as well
+          message: error.response?.data?.code
+            ? error.response?.data?.detail
+            : error.message,
         })
       );
   };
@@ -271,8 +271,9 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
                 {...params}
                 fullWidth
                 label="Entry"
-                helperText={entrySubmitErrors.name}
-                error={Boolean(entrySubmitErrors.name)}
+                helperText={fieldValidationErrors?.name}
+                error={Boolean(fieldValidationErrors?.name)}
+                InputLabelProps={{ shrink: true }}
               />
             )}
           />
@@ -283,8 +284,8 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
             setValue={setEntryAmount}
             label="Amount"
             fullWidth
-            helperText={entrySubmitErrors.amount}
-            error={Boolean(entrySubmitErrors.amount)}
+            helperText={fieldValidationErrors?.amount}
+            error={Boolean(fieldValidationErrors?.amount)}
           />
         </Grid>
         <Grid item xs={7} md={3} sx={{ mb: { xs: 2, md: 0 } }}>
@@ -300,8 +301,8 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
                 onChange={(newEntryDate) => setEntryDate(newEntryDate)}
                 slotProps={{
                   textField: {
-                    helperText: entrySubmitErrors.date,
-                    error: Boolean(entrySubmitErrors.date),
+                    helperText: fieldValidationErrors?.date,
+                    error: Boolean(fieldValidationErrors?.date),
                   },
                 }}
               />
@@ -327,14 +328,11 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
         </Grid>
         <Grid item xs={12} md={10}>
           <Collapse
-            in={entryCreationStatus != null}
+            in={entryCreationStatus !== null}
             timeout={{ enter: 250, exit: 0 }} // entrance take 0.25 seconds, exit is instant
           >
             <Alert
-              severity={entryCreationStatus?.isSuccess ? "success" : "warning"} // for icon
-              color={
-                entryCreationStatus?.isIncomeOrDebtor ? "success" : "error"
-              } // mui keywords for the color green / red
+              severity={entryCreationStatus?.isSuccess ? "success" : "error"}
               variant="outlined"
               onClose={() => setEntryCreationStatus(null)}
             >

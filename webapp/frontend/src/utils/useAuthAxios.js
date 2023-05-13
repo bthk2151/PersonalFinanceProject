@@ -4,10 +4,6 @@ import axios from "axios";
 import jwtDecode from "jwt-decode";
 import dayjs from "dayjs";
 
-// flag to ensure only a single refresh request can be done at a time
-// has to be a static variable shared across all useAuthAxios instances
-let isRefreshingToken = false;
-
 // custom hook which returns an axios instance for authenticated requests
 const useAuthAxios = () => {
   const { authTokens, setUser, setAuthTokens, logoutUser } =
@@ -36,9 +32,9 @@ const useAuthAxios = () => {
       }
 
       // check if a refresh request is in progress
-      if (!isRefreshingToken) {
+      if (!useAuthAxios.isRefreshingToken) {
         // only this single request is sent to refresh token
-        isRefreshingToken = true;
+        useAuthAxios.isRefreshingToken = true;
 
         try {
           // refresh auth tokens and save new tokens
@@ -52,18 +48,18 @@ const useAuthAxios = () => {
           setAuthTokens(response.data);
           setUser(jwtDecode(response.data.access));
         } catch (error) {
-          // if attempt to refresh with expired refresh token, force logout user
+          // if attempt to refresh with invalid / expired refresh token, force logout user
           if (error.response?.data?.code === "token_not_valid") logoutUser();
           else console.log(error.message);
         } finally {
-          isRefreshingToken = false;
+          useAuthAxios.isRefreshingToken = false;
         }
       } else {
         // wait for the current refresh request to complete
         await new Promise((resolve) => {
           const interval = setInterval(() => {
             // check every 0.1 seconds
-            if (!isRefreshingToken) {
+            if (!useAuthAxios.isRefreshingToken) {
               clearInterval(interval);
               resolve();
             }
@@ -85,5 +81,9 @@ const useAuthAxios = () => {
 
   return authAxios;
 };
+
+// flag to ensure only a single refresh request can be done at a time
+// has to be a static variable with a consistent value across all useAuthAxios instances
+useAuthAxios.isRefreshingToken = false;
 
 export default useAuthAxios;

@@ -11,6 +11,7 @@ import {
   Typography,
   Switch,
   IconButton,
+  Tooltip,
 } from "@mui/material";
 import {
   SportsScore,
@@ -89,9 +90,11 @@ const SidebarItems = ({ mode, setMode, isComprehensive }) => {
             </Box>
             <Box p={2} sx={{ display: "flex", alignItems: "center" }}>
               {user && (
-                <IconButton onClick={logoutUser}>
-                  <Logout />
-                </IconButton>
+                <Tooltip title="Logout">
+                  <IconButton onClick={logoutUser}>
+                    <Logout />
+                  </IconButton>
+                </Tooltip>
               )}
             </Box>
           </Box>

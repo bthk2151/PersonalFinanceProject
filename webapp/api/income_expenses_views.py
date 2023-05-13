@@ -2,12 +2,14 @@
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 
-from django.db.models import Count, F, Value
+from django.db.models import Count, Value
+from django.core.exceptions import ValidationError
 
+from .permissions import IsAuthenticatedAndOwner
 from .serializers import *
 from .models import *
+from .custom_errors import *
 
 from datetime import datetime
 
@@ -16,16 +18,34 @@ from datetime import datetime
 
 
 class CreateIncomeView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]  # only authenticated users can use view
+    # only authenticated users can use view
+    permission_classes = [IsAuthenticatedAndOwner]
     # no need to explicitly specify the specific model when you have the associated serializer class (which is derived from the model)
     serializer_class = CreateIncomeSerializer
 
     def perform_create(self, serializer):
+        date = serializer.validated_data["date"]
+
         # non-posted additional model data to be saved
         user = self.request.user
-        day_of_week = datetime.fromisoformat(
-            str(serializer.validated_data["date"])
-        ).weekday()
+        day_of_week = datetime.fromisoformat(str(date)).weekday()
+
+        if serializer.validated_data["is_main"]:  # if main income
+            # validate that there is no existing main income entry for the user in the selected month
+            existing_entry = Income.objects.filter(
+                user=user, date__month=date.month, date__year=date.year
+            ).exists()
+
+            if existing_entry:
+                # following conventional naming pattern, response.error.data shall contain code and detail key values
+                raise Http422UnprocessableEntityError(
+                    {
+                        "code": "main_income_entry_already_exists",
+                        "detail": "Maximum one main income entry per month",
+                    }
+                )
+
+        # serializer save only after all validation completed
         serializer.save(user=user, day_of_week=day_of_week)
 
         # ensure all other default behavior of CreateAPIView class is performed
@@ -33,13 +53,13 @@ class CreateIncomeView(generics.CreateAPIView):
 
 
 class DeleteIncomeView(generics.DestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedAndOwner]
     serializer_class = DeleteIncomeSerializer
     queryset = Income.objects.all()
 
 
 class CreateExpenseView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedAndOwner]
     serializer_class = CreateExpenseSerializer
 
     def perform_create(self, serializer):
@@ -53,13 +73,13 @@ class CreateExpenseView(generics.CreateAPIView):
 
 
 class DeleteExpenseView(generics.DestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedAndOwner]
     serializer_class = DeleteIncomeSerializer
     queryset = Expense.objects.all()
 
 
 class CreateDebtorView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedAndOwner]
     serializer_class = CreateDebtorSerializer
 
     def perform_create(self, serializer):
@@ -70,13 +90,13 @@ class CreateDebtorView(generics.CreateAPIView):
 
 
 class DeleteDebtorView(generics.DestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedAndOwner]
     serializer_class = DeleteDebtorSerializer
     queryset = Debtor.objects.all()
 
 
 class CreateCreditorView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedAndOwner]
     serializer_class = CreateCreditorSerializer
 
     def perform_create(self, serializer):
@@ -87,13 +107,13 @@ class CreateCreditorView(generics.CreateAPIView):
 
 
 class DeleteCreditorView(generics.DestroyAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedAndOwner]
     serializer_class = DeleteCreditorSerializer
     queryset = Creditor.objects.all()
 
 
 class GetTop5EntriesOfEachIncomeExpenseCategoryView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedAndOwner]
 
     def get(self, request):
         user = request.user
@@ -149,7 +169,7 @@ class GetTop5EntriesOfEachIncomeExpenseCategoryView(APIView):
 
 
 class GetIncomeExpenseListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedAndOwner]
 
     def get(self, request):
         user = request.user
@@ -194,7 +214,7 @@ class GetIncomeExpenseListView(APIView):
 
 
 class GetDebtorCreditorListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedAndOwner]
 
     def get(self, request):
         user = request.user
