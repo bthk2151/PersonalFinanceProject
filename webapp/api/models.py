@@ -2,6 +2,18 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+# auth models
+
+
+# based on django docs, default way to extend the in-built auth user model and store extra info related to the user
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    # api token to access eodhistoricaldata financial market data
+    eodhd_api_token = models.CharField(max_length=255, blank=True)
+
+
+# income expenses models
+
 
 class Income(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

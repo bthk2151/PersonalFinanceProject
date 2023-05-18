@@ -1,6 +1,68 @@
 from rest_framework import serializers
 from .models import *
 
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+from django.contrib.auth.models import User
+
+# auth serializers
+
+
+# note: profile extends from the existing in-built auth user model
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ("eodhd_api_token",)
+
+
+class CreateUserSerializer(serializers.ModelSerializer):
+    profile = ProfileSerializer()
+
+    class Meta:
+        model = User
+        fields = (
+            "id",  # id is required for sending verification email to user
+            "username",
+            "password",
+            "email",
+            "first_name",
+            "last_name",
+            "profile",
+        )
+        extra_kwargs = {
+            # write_only to ensure the password is not returned in the response
+            "password": {"write_only": True},
+            "email": {"required": True, "allow_blank": False},
+            "first_name": {"required": True, "allow_blank": False},
+            "last_name": {"required": True, "allow_blank": False},
+        }
+
+    def create(self, validated_data):
+        profile_data = validated_data.pop("profile", None)
+        # user will be inactive until email verified
+        validated_data["is_active"] = False
+
+        user = User.objects.create_user(**validated_data)
+        Profile.objects.create(user=user, **profile_data)
+
+        return user
+
+
+# custom drf simple jwt token obtain serializer, adding additional claims required by the app to the jwt
+# used in settings.py -> SIMPLE_JWT value
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        token["first_name"] = user.first_name
+        token["last_name"] = user.last_name
+
+        return token
+
+
+# income expenses serializers
+
 
 class CreateIncomeSerializer(serializers.ModelSerializer):
     class Meta:

@@ -6,12 +6,12 @@ from rest_framework.response import Response
 from django.db.models import Count, Value
 from django.core.exceptions import ValidationError
 
+from datetime import datetime
+
 from .permissions import IsAuthenticatedAndOwner
 from .serializers import *
 from .models import *
 from .custom_errors import *
-
-from datetime import datetime
 
 
 # income expenses views
@@ -46,10 +46,7 @@ class CreateIncomeView(generics.CreateAPIView):
                 )
 
         # serializer save only after all validation completed
-        serializer.save(user=user, day_of_week=day_of_week)
-
-        # ensure all other default behavior of CreateAPIView class is performed
-        return super().perform_create(serializer)
+        return serializer.save(user=user, day_of_week=day_of_week)
 
 
 class DeleteIncomeView(generics.DestroyAPIView):
@@ -67,9 +64,7 @@ class CreateExpenseView(generics.CreateAPIView):
         day_of_week = datetime.fromisoformat(
             str(serializer.validated_data["date"])
         ).weekday()
-        serializer.save(user=user, day_of_week=day_of_week)
-
-        return super().perform_create(serializer)
+        return serializer.save(user=user, day_of_week=day_of_week)
 
 
 class DeleteExpenseView(generics.DestroyAPIView):
@@ -84,9 +79,7 @@ class CreateDebtorView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         user = self.request.user
-        serializer.save(user=user)
-
-        return super().perform_create(serializer)
+        return serializer.save(user=user)
 
 
 class DeleteDebtorView(generics.DestroyAPIView):
@@ -101,9 +94,7 @@ class CreateCreditorView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         user = self.request.user
-        serializer.save(user=user)
-
-        return super().perform_create(serializer)
+        return serializer.save(user=user)
 
 
 class DeleteCreditorView(generics.DestroyAPIView):

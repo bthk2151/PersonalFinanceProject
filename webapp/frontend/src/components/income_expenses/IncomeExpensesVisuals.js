@@ -180,9 +180,9 @@ const IncomeExpensesVisuals = ({ refreshData, incomeExpenseRefreshSignal }) => {
         setPreviousMonthTotalExpenses(previousTotalExpenses);
 
         // use both month data to create gauge visual data
-        // gauge visual data format is always 1) [{total expenses}, {total income - total expenses AKA savings}] or just 2) [{total expenses}]
-        // savings may use selected month income, if none, use previous month main income to calculate (in this case, its an estimation)
-        if (totalIncome > 0) {
+        // gauge visual data format is always either 1) [{total expenses}, {total income - total expenses AKA savings}] or just 2) [{total expenses}]
+        // savings may use selected month main income, but if none, use previous month main income to calculate (in this case, its an estimation)
+        if (totalMainIncome > 0) {
           // use selected month main income
           if (totalExpenses > totalIncome)
             // total income fully spent, none remaining
@@ -207,8 +207,8 @@ const IncomeExpensesVisuals = ({ refreshData, incomeExpenseRefreshSignal }) => {
               },
             ]);
         } else if (previousTotalMainIncome > 0) {
-          // use previous month main income
-          if (totalExpenses > previousTotalMainIncome)
+          // use previous month main income with selected month side income
+          if (totalExpenses > previousTotalMainIncome + totalSideIncome)
             // estimated income fully spent, none remaining
             setGaugeVisualData([
               {
@@ -226,7 +226,8 @@ const IncomeExpensesVisuals = ({ refreshData, incomeExpenseRefreshSignal }) => {
               },
               {
                 name: "[Estimated] Savings",
-                value: previousTotalMainIncome - totalExpenses,
+                value:
+                  previousTotalMainIncome + totalSideIncome - totalExpenses,
                 fill: themeColors.positive,
               },
             ]);

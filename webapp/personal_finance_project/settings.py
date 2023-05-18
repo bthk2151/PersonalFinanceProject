@@ -57,7 +57,7 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
@@ -80,9 +80,9 @@ SIMPLE_JWT = {
     "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
     "JTI_CLAIM": "jti",
     "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
-    "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
+    "SLIDING_TOKEN_LIFETIME": timedelta(minutes=15),
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
-    "TOKEN_OBTAIN_SERIALIZER": "api.auth_views.CustomTokenObtainPairSerializer",  # pointing to custom token obtain serializer
+    "TOKEN_OBTAIN_SERIALIZER": "api.serializers.CustomTokenObtainPairSerializer",  # pointing to custom token obtain serializer
     "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
     "TOKEN_VERIFY_SERIALIZER": "rest_framework_simplejwt.serializers.TokenVerifySerializer",
     "TOKEN_BLACKLIST_SERIALIZER": "rest_framework_simplejwt.serializers.TokenBlacklistSerializer",
@@ -176,3 +176,9 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+EMAIL_USE_TLS = True
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = str(os.getenv("EMAIL_HOST_USER"))
+EMAIL_HOST_PASSWORD = str(os.getenv("EMAIL_HOST_PASSWORD"))
