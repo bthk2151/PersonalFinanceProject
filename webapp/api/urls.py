@@ -1,13 +1,15 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView
 from .auth_views import *
 from .income_expenses_views import *
 
 urlpatterns = [
+    # initial email verification link to user will be sent here
     path("create-user", CreateUserView.as_view()),
+    path("resend-verification-link", ResendVerificationEmail.as_view()),
     path("verify-user", VerifyUserView.as_view(), name="verify-user"),
-    path("token", TokenObtainPairView.as_view(), name="token-obtain-pair"),
-    path("token/refresh", TokenRefreshView.as_view(), name="token-refresh"),
+    path("token", LoginView.as_view()),
+    path("token/refresh", TokenRefreshView.as_view()),
     path("create-income", CreateIncomeView.as_view()),
     path("income/<int:pk>/delete", DeleteIncomeView.as_view(), name="delete-income"),
     path("create-expense", CreateExpenseView.as_view()),

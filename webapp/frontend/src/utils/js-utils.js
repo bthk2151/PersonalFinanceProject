@@ -47,3 +47,7 @@ export const getThemeColors = () => ({
   negative: colors.red[500], // MUI error color hex code
   negativeStrong: colors.red[900],
 });
+
+// email string regex validator
+export const isValidEmail = (email) =>
+  /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(email);

@@ -5,7 +5,6 @@ import {
   Collapse,
   Grid,
   TextField,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import React, { useContext, useState } from "react";
@@ -16,6 +15,8 @@ import jwtDecode from "jwt-decode";
 import GridBox from "./utils/GridBox";
 
 const LoginPage = () => {
+  // setLoadingInProgress(true | false) will respectively show or hide backdrop with spinner
+  const { setLoadingInProgress } = useContext(ActionContext);
   const { user, setAuthTokens, setUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
@@ -43,6 +44,8 @@ const LoginPage = () => {
     // proceed only if all fields are valid (all error message are null)
     if (!Object.values(errors).every((value) => value === null)) return;
 
+    setLoadingInProgress(true);
+
     axios
       .post("/api/token", {
         username: username,
@@ -56,19 +59,20 @@ const LoginPage = () => {
 
         navigate("/income-expenses");
       })
-      .catch((error) => {
+      .catch((error) =>
         setLoginError(
-          error.response.status === 401
-            ? "Invalid username or password"
+          error.response?.data?.code
+            ? error.response?.data?.detail
             : error.message
-        );
-      });
+        )
+      )
+      .finally(() => setLoadingInProgress(false));
   };
 
   if (user) return <Navigate to="/income-expenses" replace />;
 
   return (
-    <form onSubmit={handleSubmit} noValidate autoComplete="off">
+    <form onSubmit={handleSubmit} noValidate>
       <Grid container rowSpacing={2}>
         <Grid item xs={12}>
           <Typography variant="h5">Login</Typography>
@@ -100,20 +104,8 @@ const LoginPage = () => {
             InputLabelProps={{ shrink: true }}
           />
         </Grid>
-        <Grid item xs={12} md={4}>
-          <Tooltip title="Login">
-            <Button
-              type="submit"
-              variant="contained"
-              size="large"
-              startIcon={<Login />}
-              sx={{ width: { xs: "100%", md: "auto" } }}
-            >
-              Login
-            </Button>
-          </Tooltip>
-        </Grid>
-        <Grid item xs={12} sx={{ mt: { xs: 0, md: -1 } }}>
+        <Grid item xs={0} md={4}></Grid>
+        <Grid item xs={12} md={4} sx={{ mt: -1 }}>
           <GridBox justifyContent={{ xs: "flex-end", md: "flex-start" }}>
             <Typography variant="caption">
               Don't have an account?{" "}
@@ -123,7 +115,20 @@ const LoginPage = () => {
             </Typography>
           </GridBox>
         </Grid>
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={4} paddingRight={{ xs: 0, md: 1 }}>
+          <GridBox justifyContent={{ xs: "flex-start", md: "flex-end" }}>
+            <Button
+              type="submit"
+              variant="contained"
+              size="large"
+              startIcon={<Login />}
+              sx={{ width: { xs: "100%", md: "auto" } }}
+            >
+              Login
+            </Button>
+          </GridBox>
+        </Grid>
+        <Grid item xs={12} md={8} paddingRight={{ xs: 0, md: 1 }}>
           <Collapse
             in={loginError !== null}
             timeout={{ enter: 250, exit: 0 }} // entrance take 0.25 seconds, exit is instant

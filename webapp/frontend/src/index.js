@@ -11,6 +11,7 @@ import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
+import { ActionProvider } from "./context/ActionContext";
 
 const app = $("#app")[0];
 const root = createRoot(app);
@@ -20,7 +21,9 @@ root.render(
     <BrowserRouter>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <AuthProvider>
-          <App />
+          <ActionProvider>
+            <App />
+          </ActionProvider>
         </AuthProvider>
       </LocalizationProvider>
     </BrowserRouter>

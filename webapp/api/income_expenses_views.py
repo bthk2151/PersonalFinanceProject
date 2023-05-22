@@ -33,11 +33,11 @@ class CreateIncomeView(generics.CreateAPIView):
         if serializer.validated_data["is_main"]:  # if main income
             # validate that there is no existing main income entry for the user in the selected month
             existing_entry = Income.objects.filter(
-                user=user, date__month=date.month, date__year=date.year
+                user=user, date__month=date.month, date__year=date.year, is_main=True
             ).exists()
 
             if existing_entry:
-                # following conventional naming pattern, response.error.data shall contain code and detail key values
+                # following conventional json api error format, response.error.data shall contain code and detail key values
                 raise Http422UnprocessableEntityError(
                     {
                         "code": "main_income_entry_already_exists",

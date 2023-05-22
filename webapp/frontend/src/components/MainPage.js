@@ -6,6 +6,9 @@ import IncomeExpensesPage from "./IncomeExpensesPage";
 import { Paper } from "@mui/material";
 import LoginPage from "./LoginPage";
 import AuthRoute from "./utils/AuthRoute";
+import RegisterPage from "./RegisterPage";
+import ActivationPage from "./ActivationPage";
+import ErrorPage from "./ErrorPage";
 
 const MainPage = () => {
   return (
@@ -19,7 +22,8 @@ const MainPage = () => {
     >
       <Routes>
         <Route path="/" exact element={<LoginPage />} />
-        <Route path="/register" exact element={<p>Register Page</p>} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/activation" element={<ActivationPage />} />
         <Route element={<AuthRoute />}>
           {/* below set of routes require authentication to access */}
           <Route path="/financial-goal" element={<FinancialGoalPage />} />
@@ -29,7 +33,7 @@ const MainPage = () => {
           />
           <Route path="/income-expenses" element={<IncomeExpensesPage />} />
         </Route>
-        <Route path="*" element={<p>Hmm, nothing here</p>} />
+        <Route path="*" element={<ErrorPage />} />
       </Routes>
     </Paper>
   );

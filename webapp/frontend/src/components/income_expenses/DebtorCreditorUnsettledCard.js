@@ -6,7 +6,6 @@ import {
   Card,
   CardActions,
   CardContent,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import useAuthAxios from "../../utils/useAuthAxios";

@@ -1,9 +1,10 @@
 from rest_framework import serializers
-from .models import *
-
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from django.contrib.auth.models import User
+
+from .models import *
+from .custom_errors import *
 
 # auth serializers
 
@@ -30,6 +31,8 @@ class CreateUserSerializer(serializers.ModelSerializer):
             "profile",
         )
         extra_kwargs = {
+            # disable pre-built default username's uniqueness validator, so that my own raised error in CreateUserView class is executed and returned the frontend
+            "username": {"validators": []},
             # write_only to ensure the password is not returned in the response
             "password": {"write_only": True},
             "email": {"required": True, "allow_blank": False},

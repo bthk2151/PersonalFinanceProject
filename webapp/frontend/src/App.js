@@ -1,16 +1,23 @@
-import { createTheme, ThemeProvider, Box, CssBaseline } from "@mui/material";
+import {
+  createTheme,
+  ThemeProvider,
+  Box,
+  CssBaseline,
+  Backdrop,
+  CircularProgress,
+} from "@mui/material";
 import React, { useContext, useState } from "react";
 import Topbar from "./components/navigation/Topbar";
 import Sidebar from "./components/navigation/Sidebar";
 import MainPage from "./components/MainPage";
-import AuthContext from "./context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import ActionContext from "./context/ActionContext";
 
 const sidebarMinWidth = 260;
 const sidebarWidth = "20%";
 
 const App = () => {
-  const { setAuthTokens, setUser } = useContext(AuthContext);
+  const { loadingInProgress } = useContext(ActionContext);
 
   const navigate = useNavigate();
 
@@ -40,6 +47,12 @@ const App = () => {
         />
         <MainPage />
       </Box>
+      <Backdrop
+        sx={{ color: "white", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loadingInProgress}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </ThemeProvider>
   );
 };

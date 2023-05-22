@@ -27,6 +27,8 @@ const ENTRY_CATEGORIES = {
 };
 
 const IncomeExpensesEntryForm = ({ refreshData }) => {
+  // setLoadingInProgress(true | false) will respectively show or hide backdrop with spinner
+  const { setLoadingInProgress } = useContext(ActionContext);
   const authAxios = useAuthAxios();
 
   const [entryCategory, setEntryCategory] = useState(ENTRY_CATEGORIES.INCOME);
@@ -161,6 +163,8 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
 
     const { name, endpoint, additionalParams } = endpointMap[entryCategory];
 
+    setLoadingInProgress(true);
+
     authAxios
       .post(endpoint, { ...params, ...additionalParams })
       .then((response) => {
@@ -185,10 +189,11 @@ const IncomeExpensesEntryForm = ({ refreshData }) => {
           isSuccess: false,
           // following json api error format: if there is a code, there should be a detail key as well
           message: error.response?.data?.code
-            ? error.response?.data?.detail
+            ? error.response.data.detail
             : error.message,
         })
-      );
+      )
+      .finally(() => setLoadingInProgress(false));
   };
 
   const [suggestedEntries, setSuggestedEntries] = useState({
