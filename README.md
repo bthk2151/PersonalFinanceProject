@@ -1,9 +1,17 @@
-# Personal Finance App
+# Personal Finance Project 💵
 
-A responsive webapp serving >1 users as a personal finance tracking solution, comprehensively covering two main modules of namely: 1) Assets & Liabilties, 2) Income & Expenses
+A responsive React.js-Django web application serving as a personal finance tracking solution for >1 user, covering (in order of development) three main modules of:
+- Income & Expenses
+- Assets & Liabilities
+- Financial Goal
 
-Frontend: React.js (with MUI styling)
-Backend: Django (supported heavily by Django Rest Framework)
-Database: MySQL
+Frontend: React.js with Material-UI (recharts for visuals)
+Backend: Django with django-rest-framework (simple-jwt for authentication)
+SQL: MySQL
 
-https://www.evernote.com/shard/s705/sh/ba73d907-6be2-b807-2419-021b638926c4/d8c2fca62cdedfe5e671d2a0383d3e37 (outdated, to update this overview doc in near future)
+# How to install and setup
+Will come back to this upon deploying v1 of the app
+
+# Documentation and development progress
+Check it out below 😉:
+https://www.evernote.com/shard/s705/sh/ba73d907-6be2-b807-2419-021b638926c4/d8c2fca62cdedfe5e671d2a0383d3e37
