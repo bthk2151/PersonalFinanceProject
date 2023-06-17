@@ -1,0 +1,6 @@
+{% extends 'admin/change_list.html' %} {% block object-tools %}
+<!--custom django admin panel template only for Stock model, to have
+an additional "Refresh Stock List" button at the object-tools section of the
+panel-->
+<a href="{{ 'refresh-stock-list' }}" class="button">Refresh Stock List</a>
+{% endblock %}

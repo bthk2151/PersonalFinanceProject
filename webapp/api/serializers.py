@@ -147,3 +147,12 @@ class GetDebtorCreditorListSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=255)
     amount = serializers.DecimalField(max_digits=15, decimal_places=2)
     created_date_time = serializers.DateTimeField()
+
+
+# asset liabilities serializers
+
+
+class GetLatestStockListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Stock
+        fields = ["code", "name"]
