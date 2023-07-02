@@ -2,6 +2,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.exceptions import InvalidToken
 
 from django.urls import reverse
 from django.conf import settings
@@ -171,24 +172,24 @@ class VerifyUserView(generics.GenericAPIView):
 # for custom validation during login, inherit and override TokenObtainPairView's default obtain token post request
 class LoginView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
-        # first verify if account has been activated
-        user = User.objects.get(
-            username=request.data.get("username"),
-        )
-        if not user.is_active:
-            raise Http401Unauthorized(
-                {
-                    "code": "user_not_verified",
-                    "detail": "Please verify your email to gain access to your account",
-                }
-            )
-
-        # then check credentials
         try:
-            # if credentials are incorrect, it will raise exception below
-            # otherwise, all checks passed, return token
+            # first verify if account has been activated
+            # if user does not exist, exception will also trigger
+            user = User.objects.get(
+                username=request.data.get("username"),
+            )
+            if not user.is_active:
+                raise Http401Unauthorized(
+                    {
+                        "code": "user_not_verified",
+                        "detail": "Please verify your email to gain access to your account",
+                    }
+                )
+
+            # then verify credentials, through super() function
             return super().post(request, *args, **kwargs)
-        except Exception:
+        except (User.DoesNotExist, InvalidToken):
+            # if credentials are incorrect, it will raise exception below
             raise Http401Unauthorized(
                 {
                     "code": "invalid_credentials",

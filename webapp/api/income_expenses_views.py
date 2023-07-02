@@ -4,7 +4,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from django.db.models import Count, Value
-from django.core.exceptions import ValidationError
 
 from datetime import datetime
 

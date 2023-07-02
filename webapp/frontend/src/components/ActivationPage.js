@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import ErrorPage from "./ErrorPage";
 import { Link, useSearchParams } from "react-router-dom";
 import { Alert, Box, Button, Collapse, Stack, Typography } from "@mui/material";
 import axios from "axios";
+import ActionContext from "../context/ActionContext";
 
 const ActivationPage = () => {
   const [searchParams] = useSearchParams();
